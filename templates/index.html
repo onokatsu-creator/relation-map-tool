@@ -1,158 +1,39 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="ja">
 <head>
-	<title>Python Flask ReplAuth</title>
-<script src="https://replit.com/public/js/repl-auth-v2.js"></script>
+  <meta charset="UTF-8">
+  <title>タイプ診断グラフ</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-	{% if user_id %}
-	<center>
-  <div class="box">
-    <center>
-    <div class="box-text-auth">
-      <p>
-        Hello, {{ user_name }}! ({{ user_id }})
-      </p>
-    </div>
-  <img src="{{ user_profile_image }}" width="200">
-    <center>
-  </center>
-  </div>
-	{% else %}
-  <center>
-    <center>
-      <div class="box">
-        <div class="box-text">
-            <h1>Hello!</h1>
-        </div>
-        <div class="box-button">
-          <button onclick="LoginWithReplit()"> Login w/ replit</button>
-        </div>
-    </center>
-      </div>
-  </center>
+  <h1>タイプ診断グラフ</h1>
 
-	{% endif %}
+  <form method="POST">
+    <label for="input_text">12項目の数値（スペース区切りで1行ずつ）を入力：</label><br>
+    <textarea name="input_text" id="input_text" required
+              placeholder="例：25 18 28 19 23 11 7 12 1 5 21 28">{{ input_text }}</textarea><br><br>
+
+    {% if charts %}
+      <!-- PDFタイトル：グラフ生成後に表示 -->
+      <label for="pdf_title">PDF用タイトル：</label><br>
+      <input type="text" name="pdf_title" id="pdf_title"
+             placeholder="例：2025年度 上司タイプ診断結果"
+             value="{{ pdf_title }}"><br><br>
+    {% endif %}
+
+    <button type="submit" class="button">グラフ生成</button>
+  </form>
+
+  {% if charts %}
+    <br>
+    <a href="/download_pdf" class="button">📥 PDFでダウンロード</a>
+    {% for chart in charts %}
+      <img src="{{ chart }}" alt="診断グラフ">
+    {% endfor %}
+  {% endif %}
+
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
 </body>
-<style>
-  html, body {
-  height: 100%;
-  width: 100%;
-  background-color:#121212;
-}
-
-@font-face {
-  font-family: "Font";
-  src: url("https://css.replit.cool/Chess/src/fonts/Poppins-Bold[1].ttf");
-}
-
-h1{
-  font-family:"Font";
-  font-size:75px;
-  color:#00bbf9;
-}
-
-p{
-  font-family:"Font";
-  font-size:22px;
-  color:#00bbf9;
-}
-
-a{
-  font-family:"Font";
-  color:white;
-  font-size:22px;
-  text-decoration:none;
-  cursor:help;
-  text-shadow:2px 2px #00bbf9;
-}
-
-address{
-  font-family:"Font";
-  font-size:18px;
-  text-shadow:2px 2px #00bbf9;
-}
-
-summary{
-  font-family:"Font";
-  font-size:20px;
-  text-shadow:2px 2px #c400fa;
-  transition:0.7s;
-}
-
-details{
-  font-family:"Font";
-  font-size:20px;
-  text-shadow:2px 2px #c400fa;
-}
-
-::placeholder{
-  font-family:"Font";
-  font-size:25px;
-  color:#787878;
-}
-
-button{
-  width:200px;
-  height:55px;
-  font-family:"Trebuchet MS";
-  font-size:25px;
-  box-shadow:4px 4px white;
-  border-color:#00fa79;
-  color:white;
-  background-color:#00fa79;
-  border-radius:5px;
-}
-
-button:hover{
-  font-family:"Trebuchet MS";
-  font-size:25px;
-  background-color:white;
-  box-shadow:4px 4px #00fa79;
-  color:#00fa79;
-  border-radius:5px;
-  border-color:white;
-  transition:0.7s;
-}
-
-button:disabled{
-  font-family:"Trebuchet MS";
-  font-size:25px;
-  background-color:white;
-  box-shadow:4px 4px #00fa79;
-  border-radius:5px;
-  border-color:#121212;
-  cursor:not-allowed;
-  color:white;
-}
-
-.box-position{
-  position:relative;
-}
-  
-.box{
-  width:300px;
-  height:300px;
-  background-color:#495057;
-  border-radius:5px;
-  border-color:white;
-  position:relative;
-  top:150px;
-}
-
-.box-text{
-  position:relative;
-  top:60px;
-}
-
-.box-button{
-  position:relative;
-  top:20px;
-}
-
-.box-text-auth{
-  position:relative;
-  top:10px;
-}
-</style>
 </html>
