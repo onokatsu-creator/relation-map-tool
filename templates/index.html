@@ -7,33 +7,27 @@
 </head>
 <body>
   <h1>タイプ診断グラフ</h1>
-
   <form method="POST">
-    <label for="input_text">12項目の数値（スペース区切りで1行ずつ）を入力：</label><br>
-    <textarea name="input_text" id="input_text" required
-              placeholder="例：25 18 28 19 23 11 7 12 1 5 21 28">{{ input_text }}</textarea><br><br>
-
+    <label>12項目の数値（スペース区切り1行ずつ）</label><br>
+    <textarea name="input_text" required>{{ input_text }}</textarea><br>
+    <button type="submit">グラフ生成</button><br><br>
     {% if charts %}
-      <!-- PDFタイトル：グラフ生成後に表示 -->
-      <label for="pdf_title">PDF用タイトル：</label><br>
-      <input type="text" name="pdf_title" id="pdf_title"
-             placeholder="例：2025年度 上司タイプ診断結果"
-             value="{{ pdf_title }}"><br><br>
+    <label>PDF用タイトル：</label><br>
+    <input name="pdf_title" value="{{ pdf_title }}"><br><br>
     {% endif %}
-
-    <button type="submit" class="button">グラフ生成</button>
   </form>
 
   {% if charts %}
-    <br>
-    <a href="/download_pdf" class="button">📥 PDFでダウンロード</a>
     {% for chart in charts %}
-      <img src="{{ chart }}" alt="診断グラフ">
+      <img src="{{ chart }}">
     {% endfor %}
+    <form method="POST" action="/download_pdf">
+      <input type="hidden" name="chart1" value="{{ charts[0] }}">
+      <input type="hidden" name="chart2" value="{{ charts[1] }}">
+      <input type="hidden" name="pdf_title" value="{{ pdf_title }}">
+      <button type="submit">📥 PDFでダウンロード</button>
+    </form>
   {% endif %}
-
-  {% if error %}
-    <p style="color: red;">{{ error }}</p>
-  {% endif %}
+  {% if error %}<p>{{ error }}</p>{% endif %}
 </body>
 </html>

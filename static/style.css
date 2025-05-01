@@ -1,5 +1,5 @@
 body {
-  font-family: 'NotoSansJP', sans-serif;
+  font-family: "IPAexGothic", sans-serif;
   background-color: #f0f9f0;
   padding: 40px;
   color: #333;
@@ -19,7 +19,8 @@ label {
   margin-top: 10px;
 }
 
-textarea, input[type="text"] {
+textarea,
+input[type="text"] {
   width: 100%;
   padding: 8px;
   font-size: 14px;
@@ -27,6 +28,7 @@ textarea, input[type="text"] {
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-family: "IPAexGothic", sans-serif;
 }
 
 button {
@@ -37,6 +39,7 @@ button {
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
+  font-family: "IPAexGothic", sans-serif;
 }
 
 button:hover {
@@ -50,4 +53,5 @@ a.button {
   border-radius: 4px;
   text-decoration: none;
   color: white;
+  font-family: "IPAexGothic", sans-serif;
 }

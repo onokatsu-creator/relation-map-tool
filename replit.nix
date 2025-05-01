@@ -1,15 +1,14 @@
 { pkgs }: {
   deps = [
-    pkgs.tk
-    pkgs.tcl
-    pkgs.qhull
-    pkgs.pkg-config
-    pkgs.gtk3
-    pkgs.gobject-introspection
-    pkgs.ghostscript
-    pkgs.freetype
-    pkgs.ffmpeg-full
+    pkgs.python310
+    pkgs.python310Packages.pip
     pkgs.cairo
-    pkgs.glibcLocales
+    pkgs.ffmpeg-full
+    pkgs.fontconfig
+    pkgs.freetype
+    pkgs.glib
+    pkgs.ghostscript
+    pkgs.pango
+    pkgs.ipaexfont  # IPAGothicフォントパッケージ
   ];
 }

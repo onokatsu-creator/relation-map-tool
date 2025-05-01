@@ -4,11 +4,7 @@ hidden = [".pythonlibs"]
 
 [nix]
 channel = "stable-23_05"
-packages = ["cairo", "ffmpeg-full", "fontconfig", "freetype", "ghostscript", "glib", "glibcLocales", "gobject-introspection", "gtk3", "harfbuzz", "pango", "pkg-config", "qhull", "tcl", "tk"]
-
-[deployment]
-run = ["sh", "-c", "python3 main.py"]
-deploymentTarget = "cloudrun"
+packages = ["cairo", "ffmpeg-full", "fontconfig", "freetype", "ghostscript", "glib", "gobject-introspection", "gtk3", "harfbuzz", "ipaexfont", "pango", "pkg-config", "python310", "python310Packages.pip", "qhull", "tcl", "tk"]
 
 [[ports]]
 localPort = 3000
