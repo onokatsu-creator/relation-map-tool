@@ -17,11 +17,16 @@ import plotly.io as pio
 font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
 
 # ✅ Kaleido にフォント設定を適用
-pio.kaleido.scope.default_font = os.path.abspath(
-    "static/fonts/IPAexGothic.ttf")
+pio.kaleido.scope.default_font = font_path
 pio.kaleido.scope.mathjax = None  # 任意：MathJax警告を避けたい場合
 pio.kaleido.scope.plotlyjs = None
 pio.kaleido.scope.default_format = "pdf"
+pio.kaleido.scope.default_width = 900
+pio.kaleido.scope.default_height = 700
+
+# グラフのフォント設定
+plotly.io.templates.default = "plotly"
+plotly.io.templates["plotly"].layout.font = dict(family="IPAexGothic")
 
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
@@ -362,6 +367,8 @@ def index():
                         width=900,
                         font=dict(family="IPAexGothic", size=12),
                         showlegend=False,
+                        paper_bgcolor='white',
+                        plot_bgcolor='white',
                     )
 
                     # 保存（1枚PDF）
