@@ -17,7 +17,10 @@ from plotly.subplots import make_subplots
 import os
 
 import locale
-locale.setlocale(locale.LC_ALL, 'ja_JP.UTF-8')
+try:
+    locale.setlocale(locale.LC_ALL, 'ja_JP.UTF-8')
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'C')
 
 # グローバル設定
 plotly.io.templates.default = "plotly_white"
