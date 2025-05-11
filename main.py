@@ -16,21 +16,32 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os
 
-# フォントファイルの存在確認
-font_path = "static/fonts/IPAexGothic.ttf"
-if not os.path.exists(font_path):
-    print(f"Warning: Font file not found at {font_path}")
+import locale
+locale.setlocale(locale.LC_ALL, 'ja_JP.UTF-8')
 
-# シンプルなグローバル設定
+# グローバル設定
 plotly.io.templates.default = "plotly_white"
-pio.kaleido.scope.mathjax = None
 pio.kaleido.scope.default_width = 900
 pio.kaleido.scope.default_height = 700
 
-# 基本フォント設定
-default_font = dict(family="IPAexGothic")
-plotly.io.templates["plotly_white"].layout.font = default_font
-plotly.io.templates["plotly_white"].layout.title.font = default_font
+# フォント設定
+font_config = {
+    'family': 'Arial, IPAexGothic, sans-serif',
+    'size': 12
+}
+
+# グローバルテンプレート設定
+layout_config = {
+    'font': font_config,
+    'title': {'font': font_config},
+    'width': 900,
+    'height': 700,
+    'paper_bgcolor': 'white',
+    'plot_bgcolor': 'white'
+}
+
+# テンプレート適用
+plotly.io.templates["plotly_white"].update(layout=layout_config)
 
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
