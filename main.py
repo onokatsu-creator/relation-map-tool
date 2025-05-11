@@ -17,10 +17,8 @@ import plotly.io as pio
 font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
 
 # ✅ Kaleido にフォント設定を適用
-pio.kaleido.scope.default_font = "IPAexGothic"
-pio.kaleido.scope.default_font_family = "IPAexGothic"
-pio.kaleido.scope.default_font_paths = [os.path.dirname(font_path)
-                                        ]  # ★ これが文字化けの決定的対策
+pio.kaleido.scope.default_font = os.path.abspath(
+    "static/fonts/IPAexGothic.ttf")
 pio.kaleido.scope.mathjax = None  # 任意：MathJax警告を避けたい場合
 pio.kaleido.scope.plotlyjs = None
 pio.kaleido.scope.default_format = "pdf"
