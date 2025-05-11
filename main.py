@@ -396,20 +396,21 @@ def index():
                     fig_combined.update_xaxes(title_font=dict(family="IPAexGothic", size=12))
                     fig_combined.update_yaxes(title_font=dict(family="IPAexGothic", size=12))
 
-                    # PDF保存設定を最適化
-                    config = {
-                        'toImageButtonOptions': {
-                            'format': 'pdf',
-                            'width': 900,
-                            'height': 1600
-                        }
-                    }
+                    # PDF保存設定を改善
+                    fig_combined.update_layout(
+                        font=dict(family="IPAexGothic"),
+                        title_font=dict(family="IPAexGothic"),
+                        paper_bgcolor='white',
+                        plot_bgcolor='white'
+                    )
 
                     # 保存（1枚PDF）
                     fig_combined.write_image(
                         f"{filename_prefix}_結果統合.pdf",
                         format="pdf",
-                        engine="kaleido")
+                        engine="kaleido",
+                        width=900,
+                        height=1600)
 
                chart_div = plot(fig1, output_type='div') + "<hr>" + plot(
                    fig2, output_type='div')
