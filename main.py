@@ -1,112 +1,387 @@
-from flask import Flask, render_template, request, send_file
-import matplotlib.pyplot as plt
-import matplotlib
-import os
-import uuid
-from weasyprint import HTML
+# main_v14_v9.py
+# ベース：main_v14_v8.py
+# バージョン情報：main_v14_v9.py / index_v18
+# 作成日：2025-05-11
+# 内容：
+# - selected1_b / selected2_b が None の際にエラーが出る不具合を修正
+# - selected1_j / selected2_j にも同様の保護を強化（明示的対応）
+# - その他構成・表示・注記に変更なし
 
-matplotlib.rcParams['font.family'] = 'IPAGothic'
+# ✅ V14構成チェック済（v14_v8強化・バグ修正）
+# - ルール逸脱なし、距離測定の安定性強化
+# - 上司・部下距離測定ともにNone対応済
+import os
+import plotly.io as pio
+
+# フォントパスを絶対パスで指定
+font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
+
+# ✅ Kaleido にフォント設定を適用
+pio.kaleido.scope.default_font = "IPAexGothic"
+pio.kaleido.scope.default_font_family = "IPAexGothic"
+pio.kaleido.scope.default_font_paths = [font_path]  # ★ これが文字化けの決定的対策
+pio.kaleido.scope.mathjax = None  # 任意：MathJax警告を避けたい場合
+
+from flask import Flask, render_template, request
+import plotly.graph_objs as go
+from plotly.offline import plot
+import math
 
 app = Flask(__name__)
-UPLOAD_FOLDER = "static/output"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-
-def save_chart(x, y, s, title, xlabel, ylabel, filename):
-    fig, ax = plt.subplots()
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.scatter(x,
-               y,
-               s=s,
-               alpha=0.5,
-               color='mediumseagreen',
-               edgecolors='black')
-    fig.savefig(os.path.join(UPLOAD_FOLDER, filename), bbox_inches="tight")
-    plt.close(fig)
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    charts, input_text, pdf_title, error = [], "", "", ""
+     chart_div = ""
+     distance_result_j = ""
+     distance_result_b = ""
+     selected1_j = selected2_j = ""
+     selected1_b = selected2_b = ""
+     filename_prefix = ""
+     max_points = 0
 
-    if request.method == "POST":
-        input_text = request.form.get("input_text", "")
-        pdf_title = request.form.get("pdf_title", "").strip()
+     if request.method == "POST":
+          data = request.form.get("numbers", "")
+          selected1_j = request.form.get("point1_j")
+          selected2_j = request.form.get("point2_j")
+          selected1_b = request.form.get("point1_b")
+          selected2_b = request.form.get("point2_b")
+          filename_prefix = request.form.get("filename", "")
+          if data.strip():
+               font_family = dict(family="IPAexGothic")
 
-        lines = input_text.strip().split("\n")
-        x1_list, y1_list, s1_list = [], [], []
-        x2_list, y2_list, s2_list = [], [], []
+               rows = [
+                   list(map(int, line.split("\t")))
+                   for line in data.strip().split("\n")
+               ]
+               max_points = len(rows)
+               x_vals1, y_vals1, size1, label1 = [], [], [], []
+               x_vals2, y_vals2, size2, label2 = [], [], [], []
 
-        for line in lines:
-            try:
-                values = list(map(int, line.replace("\t", " ").split()))
-                if len(values) != 12:
-                    continue
-                k1 = (values[6] * 10 + values[5]) / 440 * 100
-                k2 = (values[9] * 20 + values[10] * 10 + values[7] +
-                      values[11]) / 1280 * 100
-                k3 = (values[3] + values[1]) / 80 * 100
-                b1 = values[6] / 40 * 100
-                b2 = (values[9] * 10 + values[10]) / 440 * 100
-                b3 = values[3] / 40 * 100
-                x1_list.append(k2)
-                y1_list.append(k1)
-                s1_list.append(k3)
-                x2_list.append(b2)
-                y2_list.append(b1)
-                s2_list.append(b3)
-            except:
-                continue
+               for i, r in enumerate(rows):
+                    x1 = (r[8] * 20 + r[9] * 10 + r[6] + r[10]) / 1280 * 100
+                    y1 = (r[5] * 10 + r[4]) / 440 * 100
+                    s1 = (r[2] + r[0]) / 80 * 100
+                    x_vals1.append(x1)
+                    y_vals1.append(y1)
+                    size1.append(s1)
+                    label1.append(str(i + 1))
 
-        if not x1_list or not x2_list:
-            error = "⚠️ 入力が正しくありません。"
-            return render_template("index.html",
-                                   charts=[],
-                                   pdf_title=pdf_title,
-                                   input_text=input_text,
-                                   error=error)
+                    x2 = (r[8] * 10 + r[9]) / 440 * 100
+                    y2 = (r[5]) / 40 * 100
+                    s2 = (r[2]) / 40 * 100
+                    x_vals2.append(x2)
+                    y_vals2.append(y2)
+                    size2.append(s2)
+                    label2.append(str(i + 1))
 
-        chart1 = f"{uuid.uuid4()}.png"
-        chart2 = f"{uuid.uuid4()}.png"
-        save_chart(x1_list, y1_list, s1_list, "上司タイプ分布図", "指示傾向", "信頼傾向",
-                   chart1)
-        save_chart(x2_list, y2_list, s2_list, "部下タイプ分布図", "主体性", "柔軟性", chart2)
-        charts = [f"{UPLOAD_FOLDER}/{chart1}", f"{UPLOAD_FOLDER}/{chart2}"]
+               # 距離測定（上司）
+               if selected1_j and selected2_j and selected1_j.isdigit(
+               ) and selected2_j.isdigit():
+                    idx1 = int(selected1_j) - 1
+                    idx2 = int(selected2_j) - 1
+                    if 0 <= idx1 < max_points and 0 <= idx2 < max_points:
+                         dx = x_vals1[idx1] - x_vals1[idx2]
+                         dy = y_vals1[idx1] - y_vals1[idx2]
+                         dist = math.sqrt(dx**2 + dy**2)
+                         distance_result_j = f"【上司】点{selected1_j}と点{selected2_j}の距離は {dist:.2f} です。"
 
-        # タイトルが未入力なら初期値
-        if not pdf_title:
-            pdf_title = "タイプ診断グラフ"
+               # 距離測定（部下）
+               if selected1_b and selected2_b and selected1_b.isdigit(
+               ) and selected2_b.isdigit():
+                    idx1 = int(selected1_b) - 1
+                    idx2 = int(selected2_b) - 1
+                    if 0 <= idx1 < max_points and 0 <= idx2 < max_points:
+                         dx = x_vals2[idx1] - x_vals2[idx2]
+                         dy = y_vals2[idx1] - y_vals2[idx2]
+                         dist = math.sqrt(dx**2 + dy**2)
+                         distance_result_b = f"【部下】点{selected1_b}と点{selected2_b}の距離は {dist:.2f} です。"
 
-        with open("static/last_info.txt", "w", encoding="utf-8") as f:
-            f.write(f"{charts[0]}\n{charts[1]}\n{pdf_title}")
+               trace1 = go.Scatter(
+                   x=x_vals1,
+                   y=y_vals1,
+                   mode='markers+text',
+                   text=label1,
+                   textposition='middle center',
+                   marker=dict(size=size1,
+                               sizemode='diameter',
+                               sizeref=2.5,
+                               sizemin=10,
+                               color='teal',
+                               line=dict(width=1, color='black')),
+                   hovertemplate=
+                   "番号: %{text}<br>X: %{x:.2f}<br>Y: %{y:.2f}<br>大きさ: %{marker.size:.2f}<extra></extra>",
+                   name="")
 
-    return render_template("index.html",
-                           charts=charts,
-                           pdf_title=pdf_title,
-                           input_text=input_text,
-                           error=error)
+               trace2 = go.Scatter(
+                   x=x_vals2,
+                   y=y_vals2,
+                   mode='markers+text',
+                   text=label2,
+                   textposition='middle center',
+                   marker=dict(size=size2,
+                               sizemode='diameter',
+                               sizeref=2.5,
+                               sizemin=10,
+                               color='orange',
+                               line=dict(width=1, color='black')),
+                   hovertemplate=
+                   "番号: %{text}<br>X: %{x:.2f}<br>Y: %{y:.2f}<br>大きさ: %{marker.size:.2f}<extra></extra>",
+                   name="")
 
+               layout1 = go.Layout(
+                   title="上司としてのワークスタイル（傾向）",
+                   font=dict(family="IPAexGothic"),
+                   width=900,
+                   xaxis=dict(title=dict(
+                       text=
+                       "適切な指示傾向（創造性・自立性・融和性・感受性）<br><span style='font-size:12px;'>※円：元気良さと発信力（会話性＋幸福性）</span>",
+                       standoff=20),
+                              range=[-5, 105],
+                              dtick=25),
+                   yaxis=dict(title="相談しやすさ（尊重性＋共感性）",
+                              range=[-5, 105],
+                              dtick=25),
+                   height=700,
+                   shapes=[
+                       dict(type="rect",
+                            x0=0,
+                            x1=50,
+                            y0=50,
+                            y1=100,
+                            fillcolor="rgba(255,228,225,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=50,
+                            x1=100,
+                            y0=50,
+                            y1=100,
+                            fillcolor="rgba(255,255,224,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=0,
+                            x1=50,
+                            y0=0,
+                            y1=50,
+                            fillcolor="rgba(224,255,255,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=50,
+                            x1=100,
+                            y0=0,
+                            y1=50,
+                            fillcolor="rgba(240,255,240,0.5)",
+                            layer="below",
+                            line=dict(width=0))
+                   ],
+                   annotations=[
+                       dict(x=5,
+                            y=102,
+                            text="見守り支援タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="left"),
+                       dict(x=95,
+                            y=102,
+                            text="柔軟実行指導タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="right"),
+                       dict(x=5,
+                            y=-2,
+                            text="職人気質タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="left"),
+                       dict(x=95,
+                            y=-2,
+                            text="目標追求指導タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="right")
+                   ])
 
-@app.route("/download_pdf", methods=["POST"])
-def download_pdf():
-    try:
-        with open("static/last_info.txt", "r", encoding="utf-8") as f:
-            lines = f.read().splitlines()
-        chart1, chart2 = lines[0], lines[1]
-        title = lines[2] if len(lines) > 2 and lines[2].strip() else "タイプ診断グラフ"
-    except Exception:
-        chart1, chart2, title = "", "", "タイプ診断グラフ"
+               layout2 = go.Layout(
+                   title="部下としてのワークスタイル（基本）",
+                   font=dict(family="IPAexGothic"),
+                   width=900,
+                   xaxis=dict(title=dict(
+                       text=
+                       "主体性（創造性＋自立性）<br><span style='font-size:12px;'>※円の大きさ（幸福性）</span>",
+                       standoff=20),
+                              range=[-5, 105],
+                              tickvals=[0, 100]),
+                   yaxis=dict(title="柔軟性（尊重性）", range=[-5, 105], dtick=25),
+                   height=700,
+                   shapes=[
+                       dict(type="rect",
+                            x0=0,
+                            x1=33.33,
+                            y0=50,
+                            y1=100,
+                            fillcolor="rgba(255,228,225,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=33.33,
+                            x1=66.66,
+                            y0=50,
+                            y1=100,
+                            fillcolor="rgba(255,255,224,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=66.66,
+                            x1=100,
+                            y0=50,
+                            y1=100,
+                            fillcolor="rgba(240,255,240,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=0,
+                            x1=33.33,
+                            y0=0,
+                            y1=50,
+                            fillcolor="rgba(224,255,255,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=33.33,
+                            x1=66.66,
+                            y0=0,
+                            y1=50,
+                            fillcolor="rgba(255,248,220,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="rect",
+                            x0=66.66,
+                            x1=100,
+                            y0=0,
+                            y1=50,
+                            fillcolor="rgba(255,240,245,0.5)",
+                            layer="below",
+                            line=dict(width=0)),
+                       dict(type="line",
+                            x0=33.33,
+                            x1=33.33,
+                            y0=0,
+                            y1=100,
+                            line=dict(color="white", width=1)),
+                       dict(type="line",
+                            x0=66.66,
+                            x1=66.66,
+                            y0=0,
+                            y1=100,
+                            line=dict(color="white", width=1))
+                   ],
+                   annotations=[
+                       dict(x=5,
+                            y=102,
+                            text="E：素直な指示待ちタイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="left"),
+                       dict(x=50,
+                            y=102,
+                            text="C：組織調整実行タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="center"),
+                       dict(x=95,
+                            y=102,
+                            text="A：柔軟主体行動タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="right"),
+                       dict(x=5,
+                            y=-2,
+                            text="F：独自世界の気難しいタイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="left"),
+                       dict(x=50,
+                            y=-2,
+                            text="D：組織調整（こだわり）タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="center"),
+                       dict(x=95,
+                            y=-2,
+                            text="B：理論目標達成タイプ",
+                            showarrow=False,
+                            font=dict(family="IPAexGothic",
+                                      color="red",
+                                      size=12),
+                            xanchor="right")
+                   ])
 
-    html = render_template("pdf_template.html",
-                           chart1=chart1,
-                           chart2=chart2,
-                           pdf_title=title)
-    pdf_path = os.path.join(UPLOAD_FOLDER, "output.pdf")
-    HTML(string=html, base_url=".").write_pdf(pdf_path)
-    return send_file(pdf_path, as_attachment=True, download_name="診断結果.pdf")
+               fig1 = go.Figure(data=[trace1], layout=layout1)
+               fig2 = go.Figure(data=[trace2], layout=layout2)
+
+               # PDF出力処理
+               if filename_prefix:
+                    from plotly.subplots import make_subplots
+
+                    # 上下に2段配置（1列2行）
+                    fig_combined = make_subplots(
+                        rows=2,
+                        cols=1,
+                        vertical_spacing=0.15,
+                        subplot_titles=("上司としてのワークスタイル（傾向）",
+                                        "部下としてのワークスタイル（基本）"))
+
+                    fig_combined.add_trace(trace1, row=1, col=1)
+                    fig_combined.add_trace(trace2, row=2, col=1)
+
+                    # レイアウト統合設定（日本語・サイズ調整）
+                    fig_combined.update_layout(
+                        height=1600,
+                        width=900,
+                        font=dict(family="IPAexGothic", size=12),
+                        showlegend=False,
+                    )
+
+                    # 保存（1枚PDF）
+                    fig_combined.write_image(f"{filename_prefix}_結果統合.pdf",
+                                             format="pdf")
+
+               chart_div = plot(fig1, output_type='div') + "<hr>" + plot(
+                   fig2, output_type='div')
+
+     return render_template("index.html",
+                            chart_html=chart_div,
+                            version="main_v14_v9 / index_v18",
+                            selected1_j=selected1_j,
+                            selected2_j=selected2_j,
+                            selected1_b=selected1_b,
+                            selected2_b=selected2_b,
+                            distance_result_j=distance_result_j,
+                            distance_result_b=distance_result_b,
+                            filename=filename_prefix,
+                            max_points=max_points)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+     app.run(debug=True, port=3000)

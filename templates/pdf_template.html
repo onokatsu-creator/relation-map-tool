@@ -1,59 +1,35 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>{{ pdf_title }}</title>
-  <style>
-    body {
-      font-family: "IPAexGothic", sans-serif;
-      font-size: 14px;
-      color: #333;
-      padding: 40px;
-      line-height: 1.8;
-    }
-    h1 {
-      font-size: 20px;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .chart {
-      margin-bottom: 40px;
-      text-align: center;
-    }
-    .note {
-      font-size: 12px;
-      margin-top: 20px;
-      color: #444;
-      text-align: left;
-    }
-    .note li {
-      margin-bottom: 4px;
-    }
-    hr {
-      margin-top: 40px;
-      border: none;
-      border-top: 1px dotted #ccc;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <style>
+        @font-face {
+            font-family: "IPAexGothic";
+            src: url("/static/fonts/IPAexGothic.ttf") format("truetype");
+          }
+        body {
+            font-family: "IPAexGothic", sans-serif;
+            text-align: center;
+            margin: 40px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 30px 0;
+        }
+        h1 {
+            font-size: 20pt;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
-  <h1>{{ pdf_title }}</h1>
-  <div class="chart">
-    <img src="{{ chart1 }}" alt="上司タイプ分布図">
-    <ul class="note">
-      <li>◆ 信頼傾向 = (G × 10 + F) ÷ 440 × 100</li>
-      <li>◆ 指示傾向 = (J × 20 + K × 10 + H + L) ÷ 1280 × 100</li>
-      <li>◆ 積極性 = (D + B) ÷ 80 × 100</li>
-    </ul>
-    <hr>
-  </div>
-  <div class="chart">
-    <img src="{{ chart2 }}" alt="部下タイプ分布図">
-    <ul class="note">
-      <li>◆ 柔軟性 = G ÷ 40 × 100</li>
-      <li>◆ 主体性 = (J × 10 + K) ÷ 440 × 100</li>
-      <li>◆ 積極性 = D ÷ 40 × 100</li>
-    </ul>
-  </div>
+    <h1>{{ pdf_title }}</h1>
+
+    <img src="{{ chart1_path }}" alt="上司タイプグラフ">
+
+    <div style="page-break-after: always;"></div>
+
+    <img src="{{ chart2_path }}" alt="部下タイプグラフ">
 </body>
 </html>

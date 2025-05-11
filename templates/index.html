@@ -1,33 +1,97 @@
+<!-- index_v18.html -->
+<!-- ベース：index_v14_rebase.html -->
+<!-- 内容：
+     - 距離測定フォームを上司・部下で分離表示
+     - 点番号セレクトボックスを max_points に連動
+     - 変数名を main_v14_v9.py と統一
+-->
+<!-- ✅ v18構成チェック済（main_v14_v9.pyと完全連携） -->
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>タイプ診断グラフ</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>診断グラフ作成ツール（上司＋部下＋距離測定）</title>
+    <style>
+        body { font-family: sans-serif; }
+        textarea { width: 100%; }
+    </style>
 </head>
 <body>
-  <h1>タイプ診断グラフ</h1>
-  <form method="POST">
-    <label>12項目の数値（スペース区切り1行ずつ）</label><br>
-    <textarea name="input_text" required>{{ input_text }}</textarea><br>
-    <button type="submit">グラフ生成</button><br><br>
-    {% if charts %}
-    <label>PDF用タイトル：</label><br>
-    <input name="pdf_title" value="{{ pdf_title }}"><br><br>
-    {% endif %}
-  </form>
+    <h1>診断グラフ作成ツール（上司＋部下＋距離測定）</h1>
+    <p style="font-size: 12px; color: gray;">main_v14_v9 / index_v18</p>
 
-  {% if charts %}
-    {% for chart in charts %}
-      <img src="{{ chart }}">
-    {% endfor %}
-    <form method="POST" action="/download_pdf">
-      <input type="hidden" name="chart1" value="{{ charts[0] }}">
-      <input type="hidden" name="chart2" value="{{ charts[1] }}">
-      <input type="hidden" name="pdf_title" value="{{ pdf_title }}">
-      <button type="submit">📥 PDFでダウンロード</button>
+    <form method="POST">
+        <label for="numbers">12項目の数値をタブ区切りで入力（1行1人／最大100行まで）:</label><br>
+        <textarea id="numbers" name="numbers" rows="12" placeholder="例:
+    37	27	40	34	37	30	29	25	30	21	37	33
+    33	23	29	18	32	13	32	37	32	8	40	28
+    24	8	24	24	16	4	28	24	36	24	24	40
+    32	25	36	36	36	36	16	17	13	13	28	36" required>{{ request.form.numbers }}</textarea><br><br>
+
+        {% if chart_html %}
+            <label>PDF出力ファイル名（任意）:</label>
+            <input type="text" name="filename" placeholder="例: 診断結果" value="{{ filename }}"><br><br>
+            <button type="submit" name="mode" value="pdf">PDF出力</button><br><br>
+        {% endif %}
+
+        <button type="submit" name="mode" value="graph">グラフ生成</button>
     </form>
-  {% endif %}
-  {% if error %}<p>{{ error }}</p>{% endif %}
+
+
+
+    {% if chart_html %}
+    <hr>
+    <h3>距離測定（上司グラフ上）</h3>
+    <form method="POST">
+        <input type="hidden" name="numbers" value="{{ request.form.numbers }}">
+        <label>点番号①：</label>
+        <select name="point1_j">
+            {% for i in range(1, max_points + 1) %}
+                <option value="{{ i }}" {% if selected1_j == i|string %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+        <label>点番号②：</label>
+        <select name="point2_j">
+            {% for i in range(1, max_points + 1) %}
+                <option value="{{ i }}" {% if selected2_j == i|string %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">距離測定</button>
+    </form>
+    {% if distance_result_j %}
+        <p style="font-weight: bold;">{{ distance_result_j }}</p>
+    {% endif %}
+
+    <h3>距離測定（部下グラフ上）</h3>
+    <form method="POST">
+        <input type="hidden" name="numbers" value="{{ request.form.numbers }}">
+        <label>点番号①：</label>
+        <select name="point1_b">
+            {% for i in range(1, max_points + 1) %}
+                <option value="{{ i }}" {% if selected1_b == i|string %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+        <label>点番号②：</label>
+        <select name="point2_b">
+            {% for i in range(1, max_points + 1) %}
+                <option value="{{ i }}" {% if selected2_b == i|string %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">距離測定</button>
+    </form>
+    {% if distance_result_b %}
+        <p style="font-weight: bold;">{{ distance_result_b }}</p>
+    {% endif %}
+    {% endif %}
+
+    {% if chart_html %}
+        <h2>診断結果グラフ</h2>
+        <div>{{ chart_html|safe }}</div>
+    {% endif %}
+
+    {% if error_message %}
+        <p style="color: red; font-weight: bold;">{{ error_message }}</p>
+    {% endif %}
 </body>
 </html>

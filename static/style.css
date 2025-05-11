@@ -13,10 +13,18 @@ h1 {
   margin-bottom: 20px;
 }
 
+h2 {
+  font-size: 20px;
+  color: #2d7d32;
+  margin-top: 40px;
+  margin-bottom: 15px;
+}
+
 label {
   font-weight: bold;
   display: block;
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-bottom: 5px;
 }
 
 textarea,
@@ -24,11 +32,10 @@ input[type="text"] {
   width: 100%;
   padding: 8px;
   font-size: 14px;
-  margin-top: 5px;
-  margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-family: "IPAexGothic", sans-serif;
+  box-sizing: border-box;
 }
 
 button {
@@ -39,6 +46,7 @@ button {
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
+  margin-top: 15px;
   font-family: "IPAexGothic", sans-serif;
 }
 
@@ -46,12 +54,14 @@ button:hover {
   background-color: #55aa5a;
 }
 
-a.button {
-  background-color: #55b2f2;
-  padding: 10px 20px;
-  display: inline-block;
-  border-radius: 4px;
-  text-decoration: none;
-  color: white;
-  font-family: "IPAexGothic", sans-serif;
+img {
+  max-width: 100%;
+  height: auto;
+  margin: 20px 0;
+}
+
+hr {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #ccc;
 }

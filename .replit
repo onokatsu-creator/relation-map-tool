@@ -4,8 +4,9 @@ hidden = [".pythonlibs"]
 
 [nix]
 channel = "stable-23_05"
-packages = ["cairo", "ffmpeg-full", "fontconfig", "freetype", "ghostscript", "glib", "gobject-introspection", "gtk3", "harfbuzz", "ipaexfont", "pango", "pkg-config", "python310", "python310Packages.pip", "qhull", "tcl", "tk"]
+packages = ["cairo", "ffmpeg-full", "fontconfig", "freetype", "ghostscript", "glib", "glibcLocales", "gobject-introspection", "gtk3", "harfbuzz", "ipaexfont", "pango", "pkg-config", "python310", "python310Packages.pip", "qhull", "tcl", "tk"]
 
 [[ports]]
 localPort = 3000
 externalPort = 3000
+exposeLocalhost = true
