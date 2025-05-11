@@ -371,24 +371,45 @@ def index():
                     fig_combined.add_trace(trace2, row=2, col=1)
 
                     # レイアウト統合設定（日本語・サイズ調整）
+                    # グラフ全体の設定
                     fig_combined.update_layout(
                         height=1600,
                         width=900,
-                        font=dict(family="IPAexGothic, Arial, sans-serif", size=12),
-                        title_font=dict(family="IPAexGothic, Arial, sans-serif", size=14),
                         showlegend=False,
                         paper_bgcolor='white',
                         plot_bgcolor='white',
                     )
 
-                    # サブプロットのフォント設定を強制的に上書き
+                    # フォント設定を完全に上書き
+                    fig_combined.update_layout(
+                        font=dict(family="IPAexGothic", size=12),
+                        title_font=dict(family="IPAexGothic", size=14)
+                    )
+                    
+                    # 各サブプロットの注釈とタイトルのフォントを設定
                     fig_combined.for_each_annotation(lambda a: a.update(font=dict(
-                        family="IPAexGothic, Arial, sans-serif",
+                        family="IPAexGothic",
                         size=12
                     )))
+                    
+                    # 各軸のタイトルフォントを設定
+                    fig_combined.update_xaxes(title_font=dict(family="IPAexGothic", size=12))
+                    fig_combined.update_yaxes(title_font=dict(family="IPAexGothic", size=12))
+
+                    # PDF保存設定を最適化
+                    config = {
+                        'toImageButtonOptions': {
+                            'format': 'pdf',
+                            'width': 900,
+                            'height': 1600
+                        }
+                    }
 
                     # 保存（1枚PDF）
-                    fig_combined.write_image(f"{filename_prefix}_結果統合.pdf",
+                    fig_combined.write_image(
+                        f"{filename_prefix}_結果統合.pdf",
+                        format="pdf",
+                        engine="kaleido",
                                              format="pdf")
 
                chart_div = plot(fig1, output_type='div') + "<hr>" + plot(
