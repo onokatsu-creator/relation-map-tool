@@ -409,8 +409,7 @@ def index():
                     fig_combined.write_image(
                         f"{filename_prefix}_結果統合.pdf",
                         format="pdf",
-                        engine="kaleido",
-                                             format="pdf")
+                        engine="kaleido")
 
                chart_div = plot(fig1, output_type='div') + "<hr>" + plot(
                    fig2, output_type='div')
