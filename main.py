@@ -35,7 +35,8 @@ plotly.io.templates["plotly_white"].layout.update(
 
 # PDFレンダリング設定
 pio.kaleido.scope.mathjax = None
-pio.kaleido.scope.plotlyjs = True
+pio.kaleido.scope.plotlyjs = "https://cdn.plot.ly/plotly-latest.min.js"
+pio.kaleido.scope.default_format = "pdf"
 
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
