@@ -13,6 +13,7 @@
 import os
 import plotly
 import plotly.io as pio
+import plotly.graph_objects as go
 
 # フォントパスを絶対パスで指定
 font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
