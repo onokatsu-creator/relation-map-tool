@@ -11,6 +11,7 @@
 # - ルール逸脱なし、距離測定の安定性強化
 # - 上司・部下距離測定ともにNone対応済
 import os
+import plotly
 import plotly.io as pio
 
 # フォントパスを絶対パスで指定

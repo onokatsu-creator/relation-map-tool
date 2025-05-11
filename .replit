@@ -10,3 +10,15 @@ packages = ["cairo", "ffmpeg-full", "fontconfig", "freetype", "ghostscript", "gl
 localPort = 3000
 externalPort = 3000
 exposeLocalhost = true
+
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 39887795
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
