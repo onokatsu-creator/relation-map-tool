@@ -16,35 +16,26 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os
 
-import locale
-try:
-    locale.setlocale(locale.LC_ALL, 'ja_JP.UTF-8')
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'C')
+# フォント設定
+FONT_FAMILY = "IPAexGothic"
 
-# グローバル設定
-plotly.io.templates.default = "plotly_white"
+# プロットの基本設定
+pio.templates.default = "plotly_white"
 pio.kaleido.scope.default_width = 900
 pio.kaleido.scope.default_height = 700
 
-# フォント設定
-font_config = {
-    'family': 'Arial, IPAexGothic, sans-serif',
-    'size': 12
-}
+# グローバルフォント設定
+plotly.io.templates["plotly_white"].layout.update(
+    font=dict(family=FONT_FAMILY, size=12),
+    title=dict(font=dict(family=FONT_FAMILY, size=14)),
+    annotations=[dict(font=dict(family=FONT_FAMILY))],
+    paper_bgcolor='white',
+    plot_bgcolor='white'
+)
 
-# グローバルテンプレート設定
-layout_config = {
-    'font': font_config,
-    'title': {'font': font_config},
-    'width': 900,
-    'height': 700,
-    'paper_bgcolor': 'white',
-    'plot_bgcolor': 'white'
-}
-
-# テンプレート適用
-plotly.io.templates["plotly_white"].update(layout=layout_config)
+# PDFレンダリング設定
+pio.kaleido.scope.mathjax = None
+pio.kaleido.scope.plotlyjs = True
 
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
