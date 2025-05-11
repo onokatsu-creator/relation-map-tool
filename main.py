@@ -10,33 +10,27 @@
 # ✅ V14構成チェック済（v14_v8強化・バグ修正）
 # - ルール逸脱なし、距離測定の安定性強化
 # - 上司・部下距離測定ともにNone対応済
-import os
 import plotly
 import plotly.io as pio
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import os
 
-# フォント設定
-plotly.io.kaleido.scope.mathjax = None
-plotly.io.kaleido.scope.plotlyjs = None
-plotly.io.kaleido.scope.default_width = 900
-plotly.io.kaleido.scope.default_height = 700
+# フォントファイルの存在確認
+font_path = "static/fonts/IPAexGothic.ttf"
+if not os.path.exists(font_path):
+    print(f"Warning: Font file not found at {font_path}")
 
-# グローバル設定
-fig_template = dict(
-    layout=dict(
-        font=dict(family="IPAexGothic"),
-        title=dict(font=dict(family="IPAexGothic")),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        width=900,
-        height=700
-    )
-)
+# シンプルなグローバル設定
+plotly.io.templates.default = "plotly_white"
+pio.kaleido.scope.mathjax = None
+pio.kaleido.scope.default_width = 900
+pio.kaleido.scope.default_height = 700
 
-# テンプレートの適用
-plotly.io.templates["custom"] = go.layout.Template(fig_template)
-plotly.io.templates.default = "custom"
+# 基本フォント設定
+default_font = dict(family="IPAexGothic")
+plotly.io.templates["plotly_white"].layout.font = default_font
+plotly.io.templates["plotly_white"].layout.title.font = default_font
 
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
