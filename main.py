@@ -382,7 +382,7 @@ def index():
 
                     # フォント設定を完全に見直し
                     font_settings = dict(
-                        family="IPAexGothic", 
+                        family="IPAexGothic, Arial, sans-serif", 
                         size=12,
                         color="black"
                     )
