@@ -17,21 +17,25 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # フォント設定
-font_family = "IPAexGothic"
 plotly.io.kaleido.scope.mathjax = None
 plotly.io.kaleido.scope.plotlyjs = None
-plotly.io.kaleido.scope.default_font = font_family
+plotly.io.kaleido.scope.default_width = 900
+plotly.io.kaleido.scope.default_height = 700
 
 # グローバル設定
-template = dict(
+fig_template = dict(
     layout=dict(
-        font=dict(family=font_family),
-        title=dict(font=dict(family=font_family)),
+        font=dict(family="IPAexGothic"),
+        title=dict(font=dict(family="IPAexGothic")),
         plot_bgcolor='white',
-        paper_bgcolor='white'
+        paper_bgcolor='white',
+        width=900,
+        height=700
     )
 )
-plotly.io.templates["custom"] = go.layout.Template(template)
+
+# テンプレートの適用
+plotly.io.templates["custom"] = go.layout.Template(fig_template)
 plotly.io.templates.default = "custom"
 
 from flask import Flask, render_template, request
