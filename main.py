@@ -382,7 +382,7 @@ def index():
 
                     # フォント設定を完全に見直し
                     font_settings = dict(
-                        family="IPAexGothic, Arial, sans-serif", 
+                        family="IPAexGothic", 
                         size=12,
                         color="black"
                     )
@@ -408,7 +408,13 @@ def index():
                     config = {
                         'plotlyServerURL': 'https://plot.ly',
                         'staticPlot': True,
-                        'locale': 'ja'
+                        'locale': 'ja',
+                        'toImageButtonOptions': {
+                            'format': 'pdf',
+                            'width': 900,
+                            'height': 1600,
+                            'scale': 2
+                        }
                     }
 
                     # 保存（1枚PDF）- 設定を最適化
