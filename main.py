@@ -374,11 +374,18 @@ def index():
                     fig_combined.update_layout(
                         height=1600,
                         width=900,
-                        font=dict(family="IPAexGothic", size=12),
+                        font=dict(family="IPAexGothic, Arial, sans-serif", size=12),
+                        title_font=dict(family="IPAexGothic, Arial, sans-serif", size=14),
                         showlegend=False,
                         paper_bgcolor='white',
                         plot_bgcolor='white',
                     )
+
+                    # サブプロットのフォント設定を強制的に上書き
+                    fig_combined.for_each_annotation(lambda a: a.update(font=dict(
+                        family="IPAexGothic, Arial, sans-serif",
+                        size=12
+                    )))
 
                     # 保存（1枚PDF）
                     fig_combined.write_image(f"{filename_prefix}_結果統合.pdf",
