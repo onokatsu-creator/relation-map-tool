@@ -382,7 +382,7 @@ def index():
 
                     # フォント設定を完全に見直し
                     font_settings = dict(
-                        family="IPAPGothic", 
+                        family="IPAexGothic", 
                         size=12,
                         color="black"
                     )
@@ -390,7 +390,7 @@ def index():
                     fig_combined.update_layout(
                         font=font_settings,
                         title_font=dict(
-                            family="IPAPGothic",
+                            family="IPAexGothic",
                             size=14,
                             color="black"
                         ),
