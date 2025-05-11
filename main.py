@@ -14,42 +14,25 @@ import os
 import plotly
 import plotly.io as pio
 import plotly.graph_objects as go
-
-# 日本語フォントの設定
-plotly.io.kaleido.scope.mathjax = None
-plotly.io.kaleido.scope.plotlyjs = None
-plotly.io.kaleido.scope.default_width = 900
-plotly.io.kaleido.scope.default_height = 700
-plotly.io.kaleido.scope.default_scale = 1
-
-# グローバルなプロットの設定を更新
-plotly.io.templates.default = "plotly_white"
-plotly.io.templates["plotly_white"].update(
-    layout=dict(
-        font=dict(family='IPAexGothic', size=12),
-        title=dict(font=dict(family='IPAexGothic', size=14))
-    )
-)
-pio.kaleido.scope.default_font = "IPAexGothic"
+from plotly.subplots import make_subplots
 
 # フォント設定
-fig_template = dict(
+font_family = "IPAexGothic"
+plotly.io.kaleido.scope.mathjax = None
+plotly.io.kaleido.scope.plotlyjs = None
+plotly.io.kaleido.scope.default_font = font_family
+
+# グローバル設定
+template = dict(
     layout=dict(
-        font=dict(family="IPAexGothic", size=12),
-        title=dict(font=dict(family="IPAexGothic", size=14))
+        font=dict(family=font_family),
+        title=dict(font=dict(family=font_family)),
+        plot_bgcolor='white',
+        paper_bgcolor='white'
     )
 )
-plotly.io.templates["custom_template"] = go.layout.Template(fig_template)
-plotly.io.templates.default = "custom_template"
-pio.kaleido.scope.mathjax = None  # 任意：MathJax警告を避けたい場合
-pio.kaleido.scope.plotlyjs = None
-pio.kaleido.scope.default_format = "pdf"
-pio.kaleido.scope.default_width = 900
-pio.kaleido.scope.default_height = 700
-
-# グラフのフォント設定
-plotly.io.templates.default = "plotly"
-plotly.io.templates["plotly"].layout.font = dict(family="IPAexGothic")
+plotly.io.templates["custom"] = go.layout.Template(template)
+plotly.io.templates.default = "custom"
 
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
@@ -361,8 +344,8 @@ def index():
                             text="B：理論目標達成タイプ",
                             showarrow=False,
                             font=dict(family="IPAexGothic",
-                                      color="red",
-                                      size=12),
+                            color="red",
+                            size=12),
                             xanchor="right")
                    ])
 
@@ -371,7 +354,6 @@ def index():
 
                # PDF出力処理
                if filename_prefix:
-                    from plotly.subplots import make_subplots
 
                     # 上下に2段配置（1列2行）
                     fig_combined = make_subplots(
