@@ -17,8 +17,12 @@ import plotly.io as pio
 # フォントパスを絶対パスで指定
 font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
 
+# Plotlyのデフォルトフォント設定
+plotly.io.templates["plotly"].layout.font = dict(family="IPAexGothic")
+plotly.io.templates["plotly"].layout.title.font = dict(family="IPAexGothic")
+
 # ✅ Kaleido にフォント設定を適用
-pio.kaleido.scope.default_font = font_path
+pio.kaleido.scope.default_font = "IPAexGothic"
 pio.kaleido.scope.mathjax = None  # 任意：MathJax警告を避けたい場合
 pio.kaleido.scope.plotlyjs = None
 pio.kaleido.scope.default_format = "pdf"
