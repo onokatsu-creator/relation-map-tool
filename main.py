@@ -15,15 +15,23 @@ import plotly
 import plotly.io as pio
 import plotly.graph_objects as go
 
-# フォントパスを絶対パスで指定
-font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
-
-# グローバルフォント設定
+# 日本語フォントの設定
 plotly.io.kaleido.scope.mathjax = None
 plotly.io.kaleido.scope.plotlyjs = None
 plotly.io.kaleido.scope.default_width = 900
 plotly.io.kaleido.scope.default_height = 700
 plotly.io.kaleido.scope.default_scale = 1
+
+# 日本語フォントの明示的な設定
+font_config = {
+    'font.family': 'IPAexGothic',
+    'font.size': 12
+}
+
+# グローバルなプロットの設定を更新
+plotly.io.templates.default = "plotly_white"
+plotly.io.templates["plotly_white"].layout.font = font_config
+plotly.io.templates["plotly_white"].layout.title.font = font_config
 
 # フォント設定
 fig_template = dict(
@@ -153,7 +161,7 @@ def index():
 
                layout1 = go.Layout(
                    title="上司としてのワークスタイル（傾向）",
-                   font=dict(family="IPAexGothic", size=12),
+                   font=dict(family='IPAexGothic', size=12),
                    width=900,
                    xaxis=dict(title=dict(
                        text=
