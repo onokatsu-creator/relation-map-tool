@@ -17,12 +17,22 @@ import plotly.io as pio
 # フォントパスを絶対パスで指定
 font_path = os.path.abspath("static/fonts/IPAexGothic.ttf")
 
-# Plotlyのデフォルトフォント設定
-plotly.io.templates["plotly"].layout.font = dict(family="IPAexGothic")
-plotly.io.templates["plotly"].layout.title.font = dict(family="IPAexGothic")
+# グローバルフォント設定
+plotly.io.kaleido.scope.mathjax = None
+plotly.io.kaleido.scope.plotlyjs = None
+plotly.io.kaleido.scope.default_width = 900
+plotly.io.kaleido.scope.default_height = 700
+plotly.io.kaleido.scope.default_scale = 1
 
-# ✅ Kaleido にフォント設定を適用
-pio.kaleido.scope.default_font = "IPAexGothic"
+# フォント設定
+fig_template = dict(
+    layout=dict(
+        font=dict(family="IPAexGothic", size=12),
+        title=dict(font=dict(family="IPAexGothic", size=14))
+    )
+)
+plotly.io.templates["custom_template"] = go.layout.Template(fig_template)
+plotly.io.templates.default = "custom_template"
 pio.kaleido.scope.mathjax = None  # 任意：MathJax警告を避けたい場合
 pio.kaleido.scope.plotlyjs = None
 pio.kaleido.scope.default_format = "pdf"
@@ -142,7 +152,7 @@ def index():
 
                layout1 = go.Layout(
                    title="上司としてのワークスタイル（傾向）",
-                   font=dict(family="IPAexGothic"),
+                   font=dict(family="IPAexGothic", size=12),
                    width=900,
                    xaxis=dict(title=dict(
                        text=
