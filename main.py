@@ -332,7 +332,8 @@ def index():
                             text="F：独自世界の気難しいタイプ",
                             showarrow=False,
                             font=dict(family="IPAexGothic",
-                                      color="red",
+```text
+color="red",
                                       size=12),
                             xanchor="left"),
                        dict(x=50,
@@ -382,15 +383,15 @@ def index():
 
                     # フォント設定を完全に見直し
                     font_settings = dict(
-                        family="IPAexGothic, Arial, sans-serif", 
+                        family="IPAPGothic", 
                         size=12,
                         color="black"
                     )
-                    
+
                     fig_combined.update_layout(
                         font=font_settings,
                         title_font=dict(
-                            family="IPAexGothic, Arial, sans-serif",
+                            family="IPAPGothic",
                             size=14,
                             color="black"
                         ),
@@ -403,7 +404,7 @@ def index():
                     fig_combined.for_each_annotation(lambda a: a.update(font=font_settings))
                     fig_combined.update_xaxes(title_font=font_settings)
                     fig_combined.update_yaxes(title_font=font_settings)
-                    
+
                     # PDFエクスポート設定の最適化
                     config = {
                         'plotlyServerURL': 'https://plot.ly',
