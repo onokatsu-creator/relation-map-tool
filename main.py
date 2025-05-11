@@ -332,9 +332,8 @@ def index():
                             text="F：独自世界の気難しいタイプ",
                             showarrow=False,
                             font=dict(family="IPAexGothic",
-```text
-color="red",
-                                      size=12),
+                                    color="red",
+                                    size=12),
                             xanchor="left"),
                        dict(x=50,
                             y=-2,
