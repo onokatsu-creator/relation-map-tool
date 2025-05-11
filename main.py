@@ -26,10 +26,11 @@ plotly.io.kaleido.scope.default_scale = 1
 plotly.io.templates.default = "plotly_white"
 plotly.io.templates["plotly_white"].update(
     layout=dict(
-        font=dict(family="IPAexGothic", size=12),
-        title=dict(font=dict(family="IPAexGothic", size=14))
+        font=dict(family='IPAexGothic', size=12),
+        title=dict(font=dict(family='IPAexGothic', size=14))
     )
 )
+pio.kaleido.scope.default_font = "IPAexGothic"
 
 # フォント設定
 fig_template = dict(
