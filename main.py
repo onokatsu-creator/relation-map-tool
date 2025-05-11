@@ -380,37 +380,46 @@ def index():
                         plot_bgcolor='white',
                     )
 
-                    # フォント設定を完全に上書き
-                    fig_combined.update_layout(
-                        font=dict(family="IPAexGothic", size=12),
-                        title_font=dict(family="IPAexGothic", size=14)
+                    # フォント設定を完全に見直し
+                    font_settings = dict(
+                        family="IPAexGothic, Arial, sans-serif", 
+                        size=12,
+                        color="black"
                     )
                     
-                    # 各サブプロットの注釈とタイトルのフォントを設定
-                    fig_combined.for_each_annotation(lambda a: a.update(font=dict(
-                        family="IPAexGothic",
-                        size=12
-                    )))
-                    
-                    # 各軸のタイトルフォントを設定
-                    fig_combined.update_xaxes(title_font=dict(family="IPAexGothic", size=12))
-                    fig_combined.update_yaxes(title_font=dict(family="IPAexGothic", size=12))
-
-                    # PDF保存設定を改善
                     fig_combined.update_layout(
-                        font=dict(family="IPAexGothic"),
-                        title_font=dict(family="IPAexGothic"),
+                        font=font_settings,
+                        title_font=dict(
+                            family="IPAexGothic, Arial, sans-serif",
+                            size=14,
+                            color="black"
+                        ),
+                        showlegend=False,
                         paper_bgcolor='white',
                         plot_bgcolor='white'
                     )
 
-                    # 保存（1枚PDF）
+                    # すべてのテキスト要素にフォント設定を適用
+                    fig_combined.for_each_annotation(lambda a: a.update(font=font_settings))
+                    fig_combined.update_xaxes(title_font=font_settings)
+                    fig_combined.update_yaxes(title_font=font_settings)
+                    
+                    # PDFエクスポート設定の最適化
+                    config = {
+                        'plotlyServerURL': 'https://plot.ly',
+                        'staticPlot': True,
+                        'locale': 'ja'
+                    }
+
+                    # 保存（1枚PDF）- 設定を最適化
                     fig_combined.write_image(
                         f"{filename_prefix}_結果統合.pdf",
                         format="pdf",
                         engine="kaleido",
                         width=900,
-                        height=1600)
+                        height=1600,
+                        scale=2  # 解像度を2倍に
+                    )
 
                chart_div = plot(fig1, output_type='div') + "<hr>" + plot(
                    fig2, output_type='div')
