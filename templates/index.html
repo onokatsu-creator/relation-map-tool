@@ -1,97 +1,422 @@
-<!-- index_v18.html -->
-<!-- ベース：index_v14_rebase.html -->
-<!-- 内容：
-     - 距離測定フォームを上司・部下で分離表示
-     - 点番号セレクトボックスを max_points に連動
-     - 変数名を main_v14_v9.py と統一
--->
-<!-- ✅ v18構成チェック済（main_v14_v9.pyと完全連携） -->
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>診断グラフ作成ツール（上司＋部下＋距離測定）</title>
-    <style>
-        body { font-family: sans-serif; }
-        textarea { width: 100%; }
-    </style>
+<meta charset="UTF-8">
+<title>診断グラフ作成ツール（上司＋部下＋距離測定）</title>
+<style>
+body { 
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f7f6; /* 少し背景色を付ける */
+    color: #333;
+    line-height: 1.6;
+}
+.container { /* 全体を囲むコンテナ */
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.8em;
+}
+.version-info { /* バージョン情報のスタイル */
+    font-size: 0.8em;
+    color: #888;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* フォームセクションのスタイル */
+.form-section {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #e0e0e0;
+}
+.form-section label {
+    display: block; /* ラベルをブロック要素に */
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+    font-size: 0.95em;
+}
+textarea, input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+textarea {
+    min-height: 120px; /* 少し高さを出す */
+    resize: vertical; /* 縦方向のみリサイズ可 */
+}
+
+button, .button-like { /* ボタン共通スタイル */
+    padding: 10px 20px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none; /* aタグ用 */
+    display: inline-block; /* aタグ用 */
+    transition: background-color 0.2s ease-in-out;
+}
+button.primary, .button-like.primary { /* メインボタン */
+    background-color: #007bff;
+    margin-top: 10px;
+}
+button.primary:hover, .button-like.primary:hover {
+    background-color: #0056b3;
+}
+button.secondary, .button-like.secondary { /* サブボタン */
+    background-color: #6c757d;
+    font-size: 0.85em;
+    padding: 6px 12px;
+}
+button.secondary:hover, .button-like.secondary:hover {
+    background-color: #545b62;
+}
+
+.graph-controls summary { /* 詳細設定の見た目 */
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    display: block; /* クリック範囲を広げる */
+    color: #333;
+}
+.graph-controls summary:hover {
+    background-color: #dde2e6;
+}
+.graph-controls[open] summary { /* 開いた時のスタイル */
+    background-color: #007bff;
+    color: white;
+}
+.highlight-select-area, .visibility-select-area {
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    background-color: #fdfdfd;
+    border-radius: 4px;
+}
+.highlight-select-area h4, .visibility-select-area h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1em;
+    color: #007bff;
+}
+.highlight-select-area label, .visibility-select-area label, .distance-form-area label {
+    margin-right: 5px;
+    font-size: 0.9em;
+    color: #555;
+}
+.highlight-select-area select, .visibility-select-area select, .distance-form-area select {
+    margin-right: 10px;
+    padding: 6px 8px; /* 少しパディングを調整 */
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: white;
+    margin-bottom: 5px; /* スマホ表示で改行された時のため */
+}
+.visibility-checkbox-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 15px;
+    margin-top: 8px;
+}
+.visibility-checkbox-list label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+.visibility-checkbox-list input[type="checkbox"] {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.download-box, .distance-form-area, .control-group {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+.download-box h3, .distance-form-area h4, .control-group h3 { /* 見出しスタイル統一 */
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.2em;
+    color: #0056b3;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+.download-box a {
+    font-weight: normal; /* 少し細く */
+    color: #007bff;
+    text-decoration: none;
+    display: block; 
+    margin-bottom: 8px;
+    padding: 5px 0;
+}
+.info-text {
+    font-size: 0.85em;
+    color: #555;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-left: 3px solid #007bff;
+}
+.graph-container {
+    margin-top:15px;
+    margin-bottom:25px;
+    padding: 10px;
+    border: 1px solid #eee;
+    background-color: #fff;
+}
+.section-separator {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border: 0;
+    border-top: 1px solid #007bff;
+}
+
+/* スマホ表示用の調整 */
+@media (max-width: 768px) { /* 少し広めのブレークポイント */
+    body { padding: 10px; }
+    .container { padding: 15px; }
+    h1 { font-size: 1.6em; }
+    .highlight-select-area select, .visibility-select-area select, .distance-form-area select {
+        width: 100%; /* スマホでは幅いっぱいに */
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+    .highlight-select-area label, .visibility-select-area label, .distance-form-area label {
+        display: block; 
+        margin-bottom: 3px;
+    }
+    .visibility-checkbox-list label {
+        width: calc(50% - 10px); /* スマホでは2列表示 */
+    }
+    .download-box ul { padding-left: 10px; }
+    .distance-form-area button { width: 100%; }
+}
+
+</style>
 </head>
 <body>
-    <h1>診断グラフ作成ツール（上司＋部下＋距離測定）</h1>
-    <p style="font-size: 12px; color: gray;">main_v14_v9 / index_v18</p>
+<div class="container"> {# 全体を囲むコンテナ #}
+    <h1>診断グラフ作成ツール</h1>
+    <p class="version-info">{{ version }}</p>
 
-    <form method="POST">
-        <label for="numbers">12項目の数値をタブ区切りで入力（1行1人／最大100行まで）:</label><br>
-        <textarea id="numbers" name="numbers" rows="12" placeholder="例:
-    37	27	40	34	37	30	29	25	30	21	37	33
-    33	23	29	18	32	13	32	37	32	8	40	28
-    24	8	24	24	16	4	28	24	36	24	24	40
-    32	25	36	36	36	36	16	17	13	13	28	36" required>{{ request.form.numbers }}</textarea><br><br>
+    <form method="POST" id="mainForm" class="form-section">
+        <label for="numbers">データ入力 (名前[タブ]番号[タブ]12数値データ):</label>
+        <textarea id="numbers" name="numbers" rows="10" placeholder="例:
+山田太郎	1	37	27	40	34	37	30	29	25	30	21	37	33
+佐藤花子	2	33	23	29	18	32	13	32	37	32	8	40	28" required>{{ request.form.numbers }}</textarea>
 
-        {% if chart_html %}
-            <label>PDF出力ファイル名（任意）:</label>
-            <input type="text" name="filename" placeholder="例: 診断結果" value="{{ filename }}"><br><br>
-            <button type="submit" name="mode" value="pdf">PDF出力</button><br><br>
+        <label for="filename"><strong>保存ファイル名（画像の出力名）:</strong></label>
+        <input type="text" id="filename" name="filename" placeholder="例: 診断結果 (未入力でデフォルト名)" value="{{ filename }}">
+
+        <details class="graph-controls">
+            <summary>詳細設定（強調表示・表示点選択）</summary>
+            <div class="highlight-select-area">
+                <h4>強調表示する点（上司グラフ）</h4>
+                <label for="highlight_point1_j">強調点①(赤):</label>
+                <select id="highlight_point1_j" name="highlight_point1_j">
+                    <option value="" {% if not highlight_point1_j %}selected{% endif %}>なし</option>
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point1_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                </select>
+                <label for="highlight_point2_j">強調点②(青):</label>
+                <select id="highlight_point2_j" name="highlight_point2_j">
+                    <option value="" {% if not highlight_point2_j %}selected{% endif %}>なし</option>
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point2_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                </select>
+                <label for="highlight_point3_j">強調点③(黄):</label>
+                <select id="highlight_point3_j" name="highlight_point3_j">
+                    <option value="" {% if not highlight_point3_j %}selected{% endif %}>なし</option>
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point3_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="highlight-select-area">
+                <h4>強調表示する点（部下グラフ）</h4>
+                <label for="highlight_point1_b">強調点①(赤):</label>
+                <select id="highlight_point1_b" name="highlight_point1_b">
+                    <option value="" {% if not highlight_point1_b %}selected{% endif %}>なし</option>
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point1_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                </select>
+                <label for="highlight_point2_b">強調点②(青):</label>
+                <select id="highlight_point2_b" name="highlight_point2_b">
+                    <option value="" {% if not highlight_point2_b %}selected{% endif %}>なし</option>
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point2_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                </select>
+                <label for="highlight_point3_b">強調点③(黄):</label>
+                <select id="highlight_point3_b" name="highlight_point3_b">
+                    <option value="" {% if not highlight_point3_b %}selected{% endif %}>なし</option>
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point3_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="visibility-select-area">
+                <h4>表示する点を選択（上司グラフ）</h4>
+                <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_j_', true, {{ max_points }})">全て表示</button>
+                <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_j_', false, {{ max_points }})">全て非表示</button>
+                <div class="visibility-checkbox-list">
+                    {% for i in range(1, max_points + 1) %}<label for="visible_points_j_{{ i }}"><input type="checkbox" id="visible_points_j_{{ i }}" name="visible_points_j" value="{{ i }}" {% if i|string in visible_points_j_selected or not visible_points_j_selected and max_points > 0 %}checked{% endif %}> {{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</label>{% endfor %}
+                </div>
+                <p class="info-text">※「全て非表示」の状態でグラフを生成すると、全ての点が表示されます。</p>
+            </div>
+            <div class="visibility-select-area">
+                <h4>表示する点を選択（部下グラフ）</h4>
+                <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_b_', true, {{ max_points }})">全て表示</button>
+                <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_b_', false, {{ max_points }})">全て非表示</button>
+                <div class="visibility-checkbox-list">
+                    {% for i in range(1, max_points + 1) %}<label for="visible_points_b_{{ i }}"><input type="checkbox" id="visible_points_b_{{ i }}" name="visible_points_b" value="{{ i }}" {% if i|string in visible_points_b_selected or not visible_points_b_selected and max_points > 0 %}checked{% endif %}> {{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</label>{% endfor %}
+                </div>
+                <p class="info-text">※「全て非表示」の状態でグラフを生成すると、全ての点が表示されます。</p>
+            </div>
+        </details>
+        <button type="submit" name="mode" value="graph" class="primary">📊 グラフ生成＋画像保存</button>
+    </form> 
+
+    <hr class="section-separator"> 
+
+    {% if chart_html_j or chart_html_b %} 
+        <div class="download-box">
+        <h3>📥 グラフ画像のダウンロード</h3>
+        <ul style="list-style: none; padding-left: 0;">
+            <li>
+            {% if filename %}
+            <a href="{{ url_for('download_file', filename=filename + '_上司.png') }}" download>
+            📷 上司グラフをダウンロード（{{ filename }}_上司.png）
+            </a>
+            {% else %}
+            <a href="{{ url_for('download_file', filename='上司.png') }}" download>
+            📷 上司グラフをダウンロード（上司.png）
+            </a>
+            {% endif %}
+            </li>
+            <li>
+            {% if filename %}
+            <a href="{{ url_for('download_file', filename=filename + '_部下.png') }}" download>
+            📷 部下グラフをダウンロード（{{ filename }}_部下.png）
+            </a>
+            {% else %}
+            <a href="{{ url_for('download_file', filename='部下.png') }}" download>
+            📷 部下グラフをダウンロード（部下.png）
+            </a>
+            {% endif %}
+            </li>
+        </ul>
+        </div>
+        <hr>
+
+        <h2>診断結果グラフ</h2>
+        <hr>
+
+        <div class="control-group">
+            <h3>上司グラフ 操作</h3>
+            <div class="distance-form-area">
+                <h4>距離測定</h4>
+                <form method="POST"> 
+                    <input type="hidden" name="numbers" value="{{ request.form.numbers }}">
+                    <input type="hidden" name="filename" value="{{ filename }}">
+                    <input type="hidden" name="highlight_point1_j" value="{{ highlight_point1_j }}">
+                    <input type="hidden" name="highlight_point2_j" value="{{ highlight_point2_j }}">
+                    <input type="hidden" name="highlight_point3_j" value="{{ highlight_point3_j }}">
+                    <input type="hidden" name="highlight_point1_b" value="{{ highlight_point1_b }}">
+                    <input type="hidden" name="highlight_point2_b" value="{{ highlight_point2_b }}">
+                    <input type="hidden" name="highlight_point3_b" value="{{ highlight_point3_b }}">
+                    {% for i in range(1, max_points + 1) %}
+                        {% if i|string in visible_points_j_selected or not visible_points_j_selected and max_points > 0 %}<input type="hidden" name="visible_points_j" value="{{ i }}">{% endif %}
+                        {% if i|string in visible_points_b_selected or not visible_points_b_selected and max_points > 0 %}<input type="hidden" name="visible_points_b" value="{{ i }}">{% endif %}
+                    {% endfor %}
+                    <label>点番号①：</label>
+                    <select name="point1_j">
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if selected1_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                    </select>
+                    <label>点番号②：</label>
+                    <select name="point2_j">
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if selected2_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="secondary">距離測定</button>
+                </form>
+                {% if distance_result_j %}
+                <p style="font-weight: bold;">{{ distance_result_j }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if chart_html_j %} 
+            <div class="graph-container">{{ chart_html_j|safe }}</div>
         {% endif %}
 
-        <button type="submit" name="mode" value="graph">グラフ生成</button>
-    </form>
+        <hr style="margin-top: 30px; margin-bottom: 30px;">
 
-
-
-    {% if chart_html %}
-    <hr>
-    <h3>距離測定（上司グラフ上）</h3>
-    <form method="POST">
-        <input type="hidden" name="numbers" value="{{ request.form.numbers }}">
-        <label>点番号①：</label>
-        <select name="point1_j">
-            {% for i in range(1, max_points + 1) %}
-                <option value="{{ i }}" {% if selected1_j == i|string %}selected{% endif %}>{{ i }}</option>
-            {% endfor %}
-        </select>
-        <label>点番号②：</label>
-        <select name="point2_j">
-            {% for i in range(1, max_points + 1) %}
-                <option value="{{ i }}" {% if selected2_j == i|string %}selected{% endif %}>{{ i }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">距離測定</button>
-    </form>
-    {% if distance_result_j %}
-        <p style="font-weight: bold;">{{ distance_result_j }}</p>
-    {% endif %}
-
-    <h3>距離測定（部下グラフ上）</h3>
-    <form method="POST">
-        <input type="hidden" name="numbers" value="{{ request.form.numbers }}">
-        <label>点番号①：</label>
-        <select name="point1_b">
-            {% for i in range(1, max_points + 1) %}
-                <option value="{{ i }}" {% if selected1_b == i|string %}selected{% endif %}>{{ i }}</option>
-            {% endfor %}
-        </select>
-        <label>点番号②：</label>
-        <select name="point2_b">
-            {% for i in range(1, max_points + 1) %}
-                <option value="{{ i }}" {% if selected2_b == i|string %}selected{% endif %}>{{ i }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">距離測定</button>
-    </form>
-    {% if distance_result_b %}
-        <p style="font-weight: bold;">{{ distance_result_b }}</p>
-    {% endif %}
-    {% endif %}
-
-    {% if chart_html %}
-        <h2>診断結果グラフ</h2>
-        <div>{{ chart_html|safe }}</div>
+        <div class="control-group">
+            <h3>部下グラフ 操作</h3>
+            <div class="distance-form-area">
+                <h4>距離測定</h4>
+                <form method="POST"> 
+                    <input type="hidden" name="numbers" value="{{ request.form.numbers }}">
+                    <input type="hidden" name="filename" value="{{ filename }}">
+                    <input type="hidden" name="highlight_point1_j" value="{{ highlight_point1_j }}">
+                    <input type="hidden" name="highlight_point2_j" value="{{ highlight_point2_j }}">
+                    <input type="hidden" name="highlight_point3_j" value="{{ highlight_point3_j }}">
+                    <input type="hidden" name="highlight_point1_b" value="{{ highlight_point1_b }}">
+                    <input type="hidden" name="highlight_point2_b" value="{{ highlight_point2_b }}">
+                    <input type="hidden" name="highlight_point3_b" value="{{ highlight_point3_b }}">
+                    {% for i in range(1, max_points + 1) %}
+                        {% if i|string in visible_points_j_selected or not visible_points_j_selected and max_points > 0 %}<input type="hidden" name="visible_points_j" value="{{ i }}">{% endif %}
+                        {% if i|string in visible_points_b_selected or not visible_points_b_selected and max_points > 0 %}<input type="hidden" name="visible_points_b" value="{{ i }}">{% endif %}
+                    {% endfor %}
+                    <label>点番号①：</label>
+                    <select name="point1_b">
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if selected1_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                    </select>
+                    <label>点番号②：</label>
+                    <select name="point2_b">
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if selected2_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="secondary">距離測定</button>
+                </form>
+                {% if distance_result_b %}
+                <p style="font-weight: bold;">{{ distance_result_b }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if chart_html_b %} 
+            <div class="graph-container">{{ chart_html_b|safe }}</div>
+        {% endif %}
     {% endif %}
 
     {% if error_message %}
-        <p style="color: red; font-weight: bold;">{{ error_message }}</p>
+    <p style="color: red; font-weight: bold;">{{ error_message }}</p>
     {% endif %}
+</div> {# container の閉じタグ #}
+<script>
+function toggleCheckboxes(prefix, checkedState, maxPoints) {
+    for (let i = 1; i <= maxPoints; i++) {
+        const checkbox = document.getElementById(prefix + i);
+        if (checkbox) {
+            checkbox.checked = checkedState;
+        }
+    }
+}
+</script>
 </body>
 </html>
