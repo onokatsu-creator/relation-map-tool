@@ -1,51 +1,44 @@
-# main_v14_v10_cleaned.py
-# (略: ファイル冒頭のコメントやimport文は変更なし)
-# - 部下グラフの選択点縁取り機能追加
-# - グラフのドラッグ・ズーム操作を無効化
-# - 特定3点のバブル背景色変更機能追加
-# - 強調表示選択の保持不具合修正
-# - バブル表示/非表示機能追加
-# - 入力データに名前列を追加し、バブルテキストを名前に変更
-# - 名前・番号列付きデータ形式の解析ロジックを修正
-# - データ解析の堅牢性を向上
-# - デプロイ文字化け対策: static/fonts 内のフォントパス指定を再度有効化
-# - デプロイ文字化け対策: default_font_paths にフルパスを指定、起動時パス確認
-# - ★★★ デプロイ文字化け対策: Kaleidoスコープのフォント関連設定を一旦クリアしてみる ★★★
-#
-# ✅ V14構成チェック済（v14_v9クリーン版）
 import os
 import plotly.io as pio
 
-# ▼ここから3行追加▼
-try:
-    pio.kaleido.scope.shutdown_kaleido_process()
-except Exception as e:
-    print(f"Kaleido shutdown error (this is often normal on first run): {e}")
-# ▲ここまで3行追加▲
+# ▼ Kaleidoプロセスのシャットダウン処理を一旦コメントアウトまたは削除してみる ▼
+# try:
+#     pio.kaleido.scope.shutdown_kaleido_process()
+# except Exception as e:
+#     print(f"Kaleido shutdown error (this is often normal on first run): {e}")
+print(f"--- Skipping initial Kaleido shutdown for this test ---")
+# ▲ Kaleidoプロセスのシャットダウン処理 ▲
 
-# フォントパスを絶対パスで指定 (このパス自体は使うかもしれないので残す)
-font_file_name = "IPAexGothic.ttf"
-static_fonts_dir = os.path.join(os.getcwd(), "static", "fonts")
-font_path = os.path.join(static_fonts_dir, font_file_name)
+# --- フォント設定の修正箇所 ---
+# 1. デフォルトのフォントファミリーを指定
+font_family_to_use = "IPAexGothic"  # スペースなしに戻す
+pio.kaleido.scope.default_font_family = font_family_to_use
+print(
+    f"--- Setting Kaleido default_font_family to: '{font_family_to_use}' ---")
 
-# ★★★ 起動時に解決されたパスを出力 (これは残す) ★★★
-print(f"--- Font Path Debug ---")
-print(f"os.getcwd(): {os.getcwd()}")
-print(f"static_fonts_dir: {static_fonts_dir}")
-print(f"font_path: {font_path}")
-print(f"Does font_path exist? {os.path.exists(font_path)}")
-print(f"Is font_path a file? {os.path.isfile(font_path)}")
-print(f"--- End Font Path Debug ---")
+# 2. default_font_paths に static/fonts ディレクトリへの絶対パスを指定する
+#    スクリプトの場所を基準に絶対パスを生成
+script_dir = os.path.dirname(os.path.abspath(__file__))
+static_font_dir = os.path.join(script_dir, "static", "fonts")
+static_font_file_path = os.path.join(static_font_dir, "IPAexGothic.ttf")
 
-# ▼▼▼ Kaleido のフォント関連スコープ設定を一旦リセット/デフォルトに戻す試み ▼▼▼
-# pio.kaleido.scope.default_font_family = "IPAexGothic" # コメントアウト
-# pio.kaleido.scope.default_font_paths = [font_path]     # コメントアウト
-# Kaleidoがシステムフォント(replit.nixでipaexfontを指定)を自動で見つけることを期待
-# ▲▲▲ Kaleido のフォント関連スコープ設定を一旦リセット/デフォルトに戻す試み ▲▲▲
+print(f"--- Checking for local font file at: '{static_font_file_path}' ---")
+if os.path.exists(static_font_file_path):
+    pio.kaleido.scope.default_font_paths = [static_font_dir]
+    print(
+        f"--- Setting Kaleido default_font_paths to: ['{static_font_dir}'] ---"
+    )
+else:
+    print(
+        f"--- !!! WARNING: Local font file NOT found at '{static_font_file_path}'. PNG font may be garbled. Attempting to rely on system fonts. ---"
+    )
+    pio.kaleido.scope.default_font_paths = []  # フォールバックとしてシステムフォントに期待
 
-pio.kaleido.scope.mathjax = None  # これらは影響ないはずだが念のため
+# --- ここまでフォント設定の修正箇所 ---
+
+pio.kaleido.scope.mathjax = None
 pio.kaleido.scope.plotlyjs = None
-pio.kaleido.scope.default_format = "pdf"  # これも影響ないはず
+pio.kaleido.scope.default_format = "png"  # ★変更の可能性: デフォルトをpngにしてみる (write_imageで指定するので影響は少ないはず)
 
 from flask import Flask, render_template, request
 from flask import send_file
@@ -60,6 +53,9 @@ app = Flask(__name__)
 # ここに追加
 @app.route("/download/<filename>")
 def download_file(filename):
+    # outputディレクトリがなければ作成
+    if not os.path.exists("output"):
+        os.makedirs("output")
     return send_file(f"output/{filename}", as_attachment=True)
 
 
@@ -87,11 +83,9 @@ def index():
     visible_points_j_selected = []
     visible_points_b_selected = []
 
-    names_list = []
+    names_list = []  # names_listを初期化
 
     if request.method == "POST":
-        # (フォームデータの取得部分は変更なし)
-        # ... (略) ...
         data = request.form.get("numbers", "")
         selected1_j = request.form.get("point1_j", "")
         selected2_j = request.form.get("point2_j", "")
@@ -109,12 +103,6 @@ def index():
         visible_points_b_selected = request.form.getlist("visible_points_b")
 
         if data.strip():
-            # ▼▼▼ グラフ内のフォント指定は "IPAexGothic" のままにする ▼▼▼
-            font_family = dict(family="IPAexGothic")
-            # ▲▲▲ グラフ内のフォント指定は "IPAexGothic" のままにする ▲▲▲
-
-            # (データ解析、グラフデータ生成ロジックは変更なし)
-            # ... (略) ...
             parsed_rows = []
             names_list_temp = []
             input_lines = data.strip().split("\n")
@@ -145,6 +133,7 @@ def index():
                     print(
                         f"  Warning: Insufficient columns (expected at least 14, got {len(parts)}). Skipping line: '{line}'"
                     )
+
             rows = parsed_rows
             names_list = names_list_temp
             original_max_points = len(rows)
@@ -169,7 +158,8 @@ def index():
 
                 for i, r in enumerate(rows):
                     point_num_str = str(i + 1)
-                    current_name = names_list[i]
+                    current_name = names_list[i] if i < len(
+                        names_list) else f"Name{i+1}"
                     if point_num_str in temp_visible_j:
                         x1 = (r[8] * 20 + r[9] * 10 + r[6] +
                               r[10]) / 1280 * 100
@@ -190,7 +180,8 @@ def index():
 
                 for i, r in enumerate(rows):
                     point_num_str = str(i + 1)
-                    current_name = names_list[i]
+                    current_name = names_list[i] if i < len(
+                        names_list) else f"Name{i+1}"
                     if point_num_str in temp_visible_b:
                         x2 = (r[8] * 10 + r[9]) / 440 * 100
                         y2 = (r[5]) / 40 * 100
@@ -266,6 +257,7 @@ def index():
                     else:
                         line_colors1_plot.append("black")
                         line_widths1_plot.append(1)
+
                     if original_idx == h_idx1_j:
                         marker_colors1_plot.append("red")
                     elif original_idx == h_idx2_j:
@@ -304,6 +296,7 @@ def index():
                     else:
                         line_colors2_plot.append("black")
                         line_widths2_plot.append(1)
+
                     if original_idx == h_idx1_b:
                         marker_colors2_plot.append("red")
                     elif original_idx == h_idx2_b:
@@ -313,11 +306,14 @@ def index():
                     else:
                         marker_colors2_plot.append("orange")
 
+                font_settings = dict(family=font_family_to_use, size=12)
+
                 trace1 = go.Scatter(
                     x=plot_x_vals1,
                     y=plot_y_vals1,
                     mode='markers+text',
                     text=plot_label1_filtered,
+                    textfont=dict(family=font_family_to_use, size=10),
                     textposition='middle center',
                     marker=dict(size=plot_size1,
                                 sizemode='diameter',
@@ -334,6 +330,7 @@ def index():
                     y=plot_y_vals2,
                     mode='markers+text',
                     text=plot_label2_filtered,
+                    textfont=dict(family=font_family_to_use, size=10),
                     textposition='middle center',
                     marker=dict(size=plot_size2,
                                 sizemode='diameter',
@@ -348,7 +345,7 @@ def index():
 
                 layout1 = go.Layout(
                     title="上司としてのワークスタイル（傾向）",
-                    font=font_family,
+                    font=font_settings,
                     width=900,
                     height=900,
                     margin=dict(b=120),
@@ -407,38 +404,30 @@ def index():
                              y=102,
                              text="見守り支援タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="left"),
                         dict(x=95,
                              y=102,
                              text="柔軟実行指導タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="right"),
                         dict(x=5,
                              y=-2,
                              text="職人気質タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="left"),
                         dict(x=95,
                              y=-2,
                              text="目標追求指導タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="right")
                     ])
                 layout2 = go.Layout(
                     title="部下としてのワークスタイル（基本）",
-                    font=font_family,
+                    font=font_settings,
                     width=900,
                     height=900,
                     margin=dict(b=120),
@@ -525,117 +514,119 @@ def index():
                              y=102,
                              text="E：素直な指示待ちタイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="left"),
                         dict(x=50,
                              y=102,
                              text="C：組織調整実行タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="center"),
                         dict(x=95,
                              y=102,
                              text="A：柔軟主体行動タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="right"),
                         dict(x=5,
                              y=-2,
                              text="F：独自世界の気難しいタイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="left"),
                         dict(x=50,
                              y=-2,
                              text="D：組織調整（こだわり）タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="center"),
                         dict(x=95,
                              y=-2,
                              text="B：理論目標達成タイプ",
                              showarrow=False,
-                             font=dict(family="IPAexGothic",
-                                       color="red",
-                                       size=12),
+                             font=dict(color="red", size=12),
                              xanchor="right")
                     ])
 
                 fig1 = go.Figure(data=[trace1], layout=layout1)
                 fig2 = go.Figure(data=[trace2], layout=layout2)
-                fig1.update_layout(font=dict(family="IPAexGothic", size=12))
-                fig2.update_layout(font=dict(family="IPAexGothic", size=12))
 
                 chart_html_j_content = plot(fig1, output_type='div')
                 chart_html_b_content = plot(fig2, output_type='div')
 
-                os.makedirs("output", exist_ok=True)
+                output_dir = "output"
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+
                 if filename_prefix_from_form.strip():
                     output_filename_j = f"{filename_prefix_from_form.strip()}_上司.png"
-                else:
-                    output_filename_j = "上司.png"
-                fig1.write_image(f"output/{output_filename_j}",
-                                 format="png",
-                                 width=900,
-                                 height=900,
-                                 scale=2)
-
-                if filename_prefix_from_form.strip():
                     output_filename_b = f"{filename_prefix_from_form.strip()}_部下.png"
                 else:
+                    output_filename_j = "上司.png"
                     output_filename_b = "部下.png"
 
-                # print(f"--- Attempting to write image for fig2: output/{output_filename_b} ---") # デバッグ完了後はコメントアウト推奨
+                full_output_path_j = os.path.join(output_dir,
+                                                  output_filename_j)
+                full_output_path_b = os.path.join(output_dir,
+                                                  output_filename_b)
+
                 try:
-                    fig2.write_image(f"output/{output_filename_b}",
+                    print(
+                        f"--- Attempting to write image for fig1: {full_output_path_j} ---"
+                    )
+                    # 重要なデバッグ情報: Kaleidoのスコープ設定を出力
+                    print(
+                        f"--- Kaleido scope before fig1.write_image: default_font_family='{pio.kaleido.scope.default_font_family}', default_font_paths={pio.kaleido.scope.default_font_paths} ---"
+                    )
+                    fig1.write_image(full_output_path_j,
                                      format="png",
                                      width=900,
                                      height=900,
                                      scale=2)
-                    # print(f"--- Successfully wrote image for fig2: output/{output_filename_b} ---") # デバッグ完了後はコメントアウト推奨
+                    print(
+                        f"--- Successfully wrote image for fig1: {full_output_path_j} ---"
+                    )
                 except Exception as e:
                     print(
-                        f"--- Error writing image for fig2: output/{output_filename_b} ---"
+                        f"--- Error writing image for fig1: {full_output_path_j} ---"
                     )
-                    print(f"--- Error details for fig2: {e} ---")
-                    print(f"--- Full traceback for fig2 error: ---")
+                    print(f"--- Error details for fig1: {e} ---")
                     traceback.print_exc()
 
+                try:
+                    print(
+                        f"--- Attempting to write image for fig2: {full_output_path_b} ---"
+                    )
+                    # 重要なデバッグ情報: Kaleidoのスコープ設定を出力
+                    print(
+                        f"--- Kaleido scope before fig2.write_image: default_font_family='{pio.kaleido.scope.default_font_family}', default_font_paths={pio.kaleido.scope.default_font_paths} ---"
+                    )
+                    fig2.write_image(full_output_path_b,
+                                     format="png",
+                                     width=900,
+                                     height=900,
+                                     scale=2)
+                    print(
+                        f"--- Successfully wrote image for fig2: {full_output_path_b} ---"
+                    )
+                except Exception as e:
+                    print(
+                        f"--- Error writing image for fig2: {full_output_path_b} ---"
+                    )
+                    print(f"--- Error details for fig2: {e} ---")
+                    traceback.print_exc()
         else:
             print(
                 "--- Data is empty or whitespace, skipping graph generation ---"
             )
-
-    # (render_template に渡すデバッグプリントは変更なし)
-    # ... (略) ...
-    # print(f"--- FINAL VALUES PASSED TO TEMPLATE ---")
-    # print(f"highlight_point1_j: '{highlight_point1_j}'")
-    # print(f"highlight_point2_j: '{highlight_point2_j}'")
-    # print(f"highlight_point3_j: '{highlight_point3_j}'")
-    # print(f"highlight_point1_b: '{highlight_point1_b}'")
-    # print(f"highlight_point2_b: '{highlight_point2_b}'")
-    # print(f"highlight_point3_b: '{highlight_point3_b}'")
-    # print(f"Before render_template: chart_html_j_content is empty: {not chart_html_j_content}")
-    # print(f"Before render_template: chart_html_b_content is empty: {not chart_html_b_content}")
-    # print(f"Visible J selected to template: {visible_points_j_selected}")
-    # print(f"Visible B selected to template: {visible_points_b_selected}")
+            names_list = []
 
     return render_template(
         "index.html",
         chart_html_j=chart_html_j_content,
         chart_html_b=chart_html_b_content,
         version=
-        "main_v14_v10_cleaned.py / index_v22_font_path_re_enable",  # バージョン更新 
+        "main_v14_v10_font_fix_attempt5_final_local / index_v22",  # バージョン更新
         selected1_j=selected1_j,
         selected2_j=selected2_j,
         selected1_b=selected1_b,
@@ -656,4 +647,6 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=3000)
+    if not os.path.exists("output"):
+        os.makedirs("output")
+    app.run(host='0.0.0.0', port=3000, debug=True)
