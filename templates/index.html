@@ -2,8 +2,34 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>診断グラフ作成ツール（上司＋部下＋距離測定）</title>
+<title>リレーションマップ作成ツール（関係性＋育成＋距離測定）</title>
+<link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 <style>
+    /* ▼▼▼ ヘッダーエリアのスタイル (ここから追加) ▼▼▼ */
+    .header-area {
+        display: flex; /* 子要素を横並びにする */
+        justify-content: space-between; /* 両端に寄せる */
+        align-items: flex-start; /* 上揃え (ロゴと協会名テキストの高さが異なる場合を考慮) */
+        margin-bottom: 5px; /* バージョン情報との間隔調整 */
+        border-bottom: 1px solid #eee; /* 区切り線 */
+        padding-bottom: 15px;
+    }
+    .logo-title-container {
+        display: flex; /* ロゴとタイトルを横並びにする */
+        align-items: center; /* 上下中央揃え */
+    }
+    #app-logo {
+        width: 200px; /* ロゴの幅（お好みで調整してください） */
+        height: auto; /* 高さは自動調整 */
+        margin-right: 15px; /* ロゴとタイトルの間隔 */
+    }
+    .association-name {
+        text-align: right;
+        font-size: 0.85em;
+        color: #555;
+        /* margin-top: 5px; /* タイトルからの位置調整 (必要なら調整) */
+    }
+    /* ▲▲▲ ヘッダーエリアのスタイル (ここまで追加) ▲▲▲ */
 body { 
     font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
     margin: 0;
@@ -22,8 +48,9 @@ body {
 }
 h1 {
     color: #007bff;
-    text-align: center;
-    margin-bottom: 10px;
+    /* text-align: center;  */
+    margin-top: 0; 
+    margin-bottom: 0;
     font-size: 1.8em;
 }
 .version-info { /* バージョン情報のスタイル */
@@ -198,7 +225,29 @@ button.secondary:hover, .button-like.secondary:hover {
 }
 
 /* スマホ表示用の調整 */
-@media (max-width: 768px) { /* 少し広めのブレークポイント */
+@media (max-width: 768px) { 
+    /* ... 既存の body, .container, h1 のルール ... */
+
+    /* ▼▼▼ スマホ時のヘッダー調整 (ここから追加) ▼▼▼ */
+    .header-area {
+        flex-direction: column; /* スマホでは縦並びにする */
+        align-items: center; /* 中央揃え */
+    }
+    .logo-title-container {
+        margin-bottom: 10px; /* タイトルと協会名の間隔 */
+    }
+    .association-name {
+        text-align: center; /* スマホでは協会名も中央揃え */
+        width: 100%;
+    }
+    #app-logo {
+      width: 40px; /* スマホではロゴを少し小さく */
+      margin-right: 10px;
+    }
+    /* ▲▲▲ スマホ時のヘッダー調整 (ここまで追加) ▲▲▲ */
+
+    /* ... 既存の他の@media内のルール ... */
+    /* 少し広めのブレークポイント */
     body { padding: 10px; }
     .container { padding: 15px; }
     h1 { font-size: 1.6em; }
@@ -217,63 +266,121 @@ button.secondary:hover, .button-like.secondary:hover {
     .download-box ul { padding-left: 10px; }
     .distance-form-area button { width: 100%; }
 }
+    /* ▼▼▼ 強調表示エリアの横並び用CSS (新規追加) ▼▼▼ */
+    .highlight-select-area { /* 既存のスタイルに追記、または新規で */
+        /* ... 既存の .highlight-select-area のスタイル ... */
+        display: flex; /* 子要素 (各 .highlight-item) を横並びにする */
+        flex-wrap: wrap; /* スマホなどで折り返すようにする */
+        justify-content: flex-start; /* ← space-around から flex-start に変更 */
+        gap: 10px; /* アイテム間の隙間 */
+    }
+    .highlight-select-area > h4 {
+        width: 100%; /* flex-basis: 100%; の方がFlexアイテムとしてはより正確 */
+        flex-basis: 100%; 
+        margin-bottom: 0px; /* 注釈との間隔を調整 */
+    }
 
+    .highlight-select-area > p.info-text {
+        width: 100%; /* flex-basis: 100%; の方がFlexアイテムとしてはより正確 */
+        flex-basis: 100%;
+        /* style属性で font-size: 0.8em; margin-top:0; margin-bottom: 8px; が指定されているので、
+           CSSでのmargin-bottomは重複しないように注意するか、style属性側を調整 */
+        margin-bottom: 10px; /* 強調点選択肢との間隔 */
+    }
+    .highlight-item {
+        display: flex;
+        flex-direction: column; /* ラベルとセレクトを縦に積む */
+        align-items: flex-start; /* 左揃え */
+        margin-bottom: 10px; /* 各アイテムの下マージン */
+    }
+
+    .highlight-item label {
+        margin-bottom: 5px; /* ラベルとセレクトの間隔 */
+    }
+
+    .highlight-item select[multiple] { /* 複数選択セレクトボックスの推奨サイズ */
+        min-width: 150px; /* 最小幅（適宜調整） */
+        /* height: 80px;  高さは size="3" で調整されるので、CSSでのheightは不要な場合が多い */
+    }
+    /* ▲▲▲ 強調表示エリアの横並び用CSS ▲▲▲ */
 </style>
 </head>
 <body>
 <div class="container"> {# 全体を囲むコンテナ #}
-    <h1>診断グラフ作成ツール</h1>
-    <p class="version-info">{{ version }}</p>
+    <div class="header-area">
+        <div class="logo-title-container">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="ロゴ" id="app-logo">
+            <h1>リレーションマップ作成ツール</h1>
+        </div>
+        <div class="association-name">
+            <p>一般社団法人HRアセスメント協会</p>
+        </div>
+        </div>
+        <p class="version-info">{{ version }}</p>
 
     <form method="POST" id="mainForm" class="form-section">
-        <label for="numbers">データ入力 (名前[タブ]番号[タブ]12数値データ):</label>
+        <label for="numbers">データ入力 (名前[タブ]12数値データ):</label>
         <textarea id="numbers" name="numbers" rows="10" placeholder="例:
-山田太郎	1	37	27	40	34	37	30	29	25	30	21	37	33
-佐藤花子	2	33	23	29	18	32	13	32	37	32	8	40	28" required>{{ request.form.numbers }}</textarea>
-
+山田太郎	37	27	40	34	37	30	29	25	30	21	37	33
+佐藤花子	33	23	29	18	32	13	32	37	32	8	40	28" required>{{ request.form.numbers }}</textarea>
+        <button type="button" id="clearDataButton" class="secondary" onclick="clearTextarea()" style="margin-top: 5px; margin-bottom: 15px;">入力クリア</button>
         <label for="filename"><strong>保存ファイル名（画像の出力名）:</strong></label>
         <input type="text" id="filename" name="filename" placeholder="例: 診断結果 (未入力でデフォルト名)" value="{{ filename }}">
 
         <details class="graph-controls">
             <summary>詳細設定（強調表示・表示点選択）</summary>
             <div class="highlight-select-area">
-                <h4>強調表示する点（上司グラフ）</h4>
+                <h4>強調表示する点（関係性グラフ）</h4>
+                <p class="info-text" style="font-size: 0.8em; margin-top:0;">※ Ctrlキー (MacではCommandキー) を押しながらクリックすると複数選択できます。</p>
+                <div class="highlight-item">
                 <label for="highlight_point1_j">強調点①(赤):</label>
-                <select id="highlight_point1_j" name="highlight_point1_j">
-                    <option value="" {% if not highlight_point1_j %}selected{% endif %}>なし</option>
-                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point1_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                <select id="highlight_point1_j" name="highlight_point1_j" multiple size="3">
+                    {# <option value="" {% if not highlight_point1_j %}selected{% endif %}>なし</option> ← multipleの場合「なし」は選択肢として不適切なので削除またはコメントアウト #}
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if i|string in highlight_point1_j %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
                 </select>
+                </div>
+                <div class="highlight-item">
                 <label for="highlight_point2_j">強調点②(青):</label>
-                <select id="highlight_point2_j" name="highlight_point2_j">
-                    <option value="" {% if not highlight_point2_j %}selected{% endif %}>なし</option>
-                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point2_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                <select id="highlight_point2_j" name="highlight_point2_j" multiple size="3">
+                    {# <option value="" {% if not highlight_point2_j %}selected{% endif %}>なし</option> ← multipleの場合「なし」は選択肢として不適切なので削除またはコメントアウト #}
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if i|string in highlight_point2_j %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
                 </select>
+                </div>
+                <div class="highlight-item">
                 <label for="highlight_point3_j">強調点③(黄):</label>
-                <select id="highlight_point3_j" name="highlight_point3_j">
-                    <option value="" {% if not highlight_point3_j %}selected{% endif %}>なし</option>
-                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point3_j == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                <select id="highlight_point3_j" name="highlight_point3_j" multiple size="3">
+                    {# <option value="" {% if not highlight_point3_j %}selected{% endif %}>なし</option> ← multipleの場合「なし」は選択肢として不適切なので削除またはコメントアウト #}
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if i|string in highlight_point3_j %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
                 </select>
+                </div>
             </div>
             <div class="highlight-select-area">
-                <h4>強調表示する点（部下グラフ）</h4>
+                <h4>強調表示する点（育成グラフ）</h4>
+                <p class="info-text" style="font-size: 0.8em; margin-top:0;">※ Ctrlキー (MacではCommandキー) を押しながらクリックすると複数選択できます。</p>
+                <div class="highlight-item">
                 <label for="highlight_point1_b">強調点①(赤):</label>
-                <select id="highlight_point1_b" name="highlight_point1_b">
-                    <option value="" {% if not highlight_point1_b %}selected{% endif %}>なし</option>
-                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point1_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                <select id="highlight_point1_b" name="highlight_point1_b" multiple size="3">
+                    {# <option value="" {% if not highlight_point1_b %}selected{% endif %}>なし</option> ← multipleの場合「なし」は選択肢として不適切なので削除またはコメントアウト #}
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if i|string in highlight_point1_b %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
                 </select>
+                </div>
+                <div class="highlight-item">
                 <label for="highlight_point2_b">強調点②(青):</label>
-                <select id="highlight_point2_b" name="highlight_point2_b">
-                    <option value="" {% if not highlight_point2_b %}selected{% endif %}>なし</option>
-                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point2_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                <select id="highlight_point2_b" name="highlight_point2_b" multiple size="3">
+                    {# <option value="" {% if not highlight_point2_b %}selected{% endif %}>なし</option> ← multipleの場合「なし」は選択肢として不適切なので削除またはコメントアウト #}
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if i|string in highlight_point2_b %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
                 </select>
+                </div>
+                <div class="highlight-item">
                 <label for="highlight_point3_b">強調点③(黄):</label>
-                <select id="highlight_point3_b" name="highlight_point3_b">
-                    <option value="" {% if not highlight_point3_b %}selected{% endif %}>なし</option>
-                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if highlight_point3_b == i|string %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
+                <select id="highlight_point3_b" name="highlight_point3_b" multiple size="3">
+                    {# <option value="" {% if not highlight_point3_b %}selected{% endif %}>なし</option> ← multipleの場合「なし」は選択肢として不適切なので削除またはコメントアウト #}
+                    {% for i in range(1, max_points + 1) %}<option value="{{ i }}" {% if i|string in highlight_point3_b %}selected{% endif %}>{{ i }}: {{ names_list[i-1] if names_list and i-1 < names_list|length else i }}</option>{% endfor %}
                 </select>
+                </div>
             </div>
             <div class="visibility-select-area">
-                <h4>表示する点を選択（上司グラフ）</h4>
+                <h4>表示する点を選択（関係性グラフ）</h4>
                 <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_j_', true, {{ max_points }})">全て表示</button>
                 <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_j_', false, {{ max_points }})">全て非表示</button>
                 <div class="visibility-checkbox-list">
@@ -282,7 +389,7 @@ button.secondary:hover, .button-like.secondary:hover {
                 <p class="info-text">※「全て非表示」の状態でグラフを生成すると、全ての点が表示されます。</p>
             </div>
             <div class="visibility-select-area">
-                <h4>表示する点を選択（部下グラフ）</h4>
+                <h4>表示する点を選択（育成グラフ）</h4>
                 <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_b_', true, {{ max_points }})">全て表示</button>
                 <button type="button" class="secondary" onclick="toggleCheckboxes('visible_points_b_', false, {{ max_points }})">全て非表示</button>
                 <div class="visibility-checkbox-list">
@@ -302,23 +409,23 @@ button.secondary:hover, .button-like.secondary:hover {
         <ul style="list-style: none; padding-left: 0;">
             <li>
             {% if filename %}
-            <a href="{{ url_for('download_file', filename=filename + '_上司.png') }}" download>
-            📷 上司グラフをダウンロード（{{ filename }}_上司.png）
+            <a href="{{ url_for('download_file', filename=filename + '_関係性.png') }}" download>
+            📷 関係性グラフをダウンロード（{{ filename }}_関係性.png）
             </a>
             {% else %}
-            <a href="{{ url_for('download_file', filename='上司.png') }}" download>
-            📷 上司グラフをダウンロード（上司.png）
+            <a href="{{ url_for('download_file', filename='関係性.png') }}" download>
+            📷 関係性グラフをダウンロード（関係性.png）
             </a>
             {% endif %}
             </li>
             <li>
             {% if filename %}
-            <a href="{{ url_for('download_file', filename=filename + '_部下.png') }}" download>
-            📷 部下グラフをダウンロード（{{ filename }}_部下.png）
+            <a href="{{ url_for('download_file', filename=filename + '_育成.png') }}" download>
+            📷 育成グラフをダウンロード（{{ filename }}_育成.png）
             </a>
             {% else %}
-            <a href="{{ url_for('download_file', filename='部下.png') }}" download>
-            📷 部下グラフをダウンロード（部下.png）
+            <a href="{{ url_for('download_file', filename='育成.png') }}" download>
+            📷 育成グラフをダウンロード（育成.png）
             </a>
             {% endif %}
             </li>
@@ -330,7 +437,7 @@ button.secondary:hover, .button-like.secondary:hover {
         <hr>
 
         <div class="control-group">
-            <h3>上司グラフ 操作</h3>
+            <h3>関係性グラフ 操作</h3>
             <div class="distance-form-area">
                 <h4>距離測定</h4>
                 <form method="POST"> 
@@ -368,7 +475,7 @@ button.secondary:hover, .button-like.secondary:hover {
         <hr style="margin-top: 30px; margin-bottom: 30px;">
 
         <div class="control-group">
-            <h3>部下グラフ 操作</h3>
+            <h3>育成グラフ 操作</h3>
             <div class="distance-form-area">
                 <h4>距離測定</h4>
                 <form method="POST"> 
@@ -416,6 +523,9 @@ function toggleCheckboxes(prefix, checkedState, maxPoints) {
             checkbox.checked = checkedState;
         }
     }
+}
+function clearTextarea() {
+    document.getElementById('numbers').value = '';
 }
 </script>
 </body>

@@ -26,6 +26,10 @@ packages = [
 ]
 
 [[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
 localPort = 8080
 externalPort = 8080
 
@@ -43,4 +47,8 @@ args = "mkdir -p ~/.fonts && cp -n static/fonts/IPAexGothic.ttf ~/.fonts/ && fc-
 
 [deployment]
 deploymentTarget = "cloudrun"
-run = ["sh", "-c", "echo \"--- Current working directory: $(pwd) ---\" && echo \"--- Listing static directory: ---\" && ls -l static && echo \"--- Listing static/fonts directory: ---\" && ls -l static/fonts && echo \"--- Checking IPAexGothic.ttf: ---\" && ls -l static/fonts/IPAexGothic.ttf && echo \"--- Running fc-cache ---\" && fc-cache -fv && echo \"--- Starting Gunicorn ---\" && gunicorn main:app --bind 0.0.0.0:8080 --access-logfile - --error-logfile -"]
+run = [
+  "sh",
+  "-c",
+  "mkdir -p ~/.fonts && cp -n static/fonts/IPAexGothic.ttf ~/.fonts/ && fc-cache -fv && echo \"--- Starting Gunicorn ---\" && gunicorn main:app --bind 0.0.0.0:3000 --access-logfile - --error-logfile -",
+]
