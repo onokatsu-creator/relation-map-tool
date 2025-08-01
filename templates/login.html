@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン - リレーションマップ作成ツール</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 40px); /* padding分を考慮 */ }
+        .login-container { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #007bff; margin-bottom: 25px; font-size: 1.8em; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; text-align: left; font-size: 0.95em; }
+        input[type="password"] { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+        button[type="submit"] { padding: 12px 20px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; transition: background-color 0.2s; width: 100%; }
+        button[type="submit"]:hover { background-color: #0056b3; }
+        .flash-messages { list-style: none; padding: 0; margin: 0 0 20px 0; text-align: left; }
+        .flash-messages li { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; font-size: 0.9em; }
+        .flash-messages li.danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .flash-messages li.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-messages li.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>リレーションマップ作成ツール</h1>
+        {# フラッシュメッセージの表示 (jinja2のwith構文を使用) #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <form method="post"> {# action属性は空で、現在のURL (/login) にPOSTします #}
+            <div>
+                <label for="password">パスワード:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">ログイン</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -47,12 +47,12 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "mkdir -p ~/.fonts && cp -n static/fonts/IPAexGothic.ttf ~/.fonts/ && fc-cache -fv && python main.py"
+args = "mkdir -p ~/.fonts && cp -n static/fonts/IPAexGothic.ttf ~/.fonts/ && fc-cache -fv && pip install -r requirements.txt && python main.py"
 
 [deployment]
 deploymentTarget = "cloudrun"
 run = [
   "sh",
   "-c",
-  "mkdir -p ~/.fonts && cp -n static/fonts/IPAexGothic.ttf ~/.fonts/ && fc-cache -fv && echo \"--- Starting Gunicorn ---\" && gunicorn main:app --bind 0.0.0.0:3000 --access-logfile - --error-logfile -",
+  "mkdir -p ~/.fonts && cp -n static/fonts/IPAexGothic.ttf ~/.fonts/ && fc-cache -fv && pip install -r requirements.txt && echo \"--- Starting Gunicorn ---\" && gunicorn main:app --bind 0.0.0.0:3000 --access-logfile - --error-logfile -",
 ]

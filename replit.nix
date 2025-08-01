@@ -10,6 +10,6 @@
     pkgs.ghostscript
     pkgs.pango
     pkgs.ipaexfont  # IPAGothicフォントパッケージ
-    pkgs.poetry
+    #pkgs.poetry
   ];
 }
